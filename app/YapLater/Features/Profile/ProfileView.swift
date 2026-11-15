@@ -190,7 +190,7 @@ struct ProfileView: View {
     private var syncCard: some View {
         VStack(alignment: .leading, spacing: Theme.Space.m) {
             Text("Your other device").font(Theme.title).foregroundStyle(Theme.ink)
-            Text(model.syncStatus ?? "Copy your entries and budgets between your Mac and iPhone over Bluetooth. No internet involved. Tap Sync on both.")
+            Text(model.syncStatus ?? "Copy your entries, budgets, name and picture between your Mac and iPhone over Bluetooth. No internet involved. Tap Sync on both.")
                 .font(Theme.caption)
                 .foregroundStyle(Theme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)

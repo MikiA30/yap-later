@@ -16,10 +16,31 @@ struct SyncSnapshot: Codable, Equatable, Sendable {
         var weeklyLimitCents: Int
     }
 
+    /// The user's name and picture, so both devices greet them the same way.
+    struct Profile: Codable, Equatable, Sendable {
+        var name: String
+        /// A small JPEG, or nil when there is no picture.
+        var photo: Data?
+        /// When the name or picture was last changed by hand.
+        var changedAt: Date
+
+        var isEmpty: Bool { name.isEmpty && photo == nil }
+
+        /// Whether this profile, arriving from the other device, should take the place of `mine`.
+        /// The one changed most recently wins, and a device with nothing set takes whatever arrives.
+        func shouldReplace(_ mine: Profile) -> Bool {
+            guard !isEmpty else { return false }
+            return mine.isEmpty || changedAt > mine.changedAt
+        }
+    }
+
     var entries: [Item] = []
     var budgets: [Limit] = []
+    /// Absent when the sending device has no name or picture, and in ledgers saved by earlier builds.
+    var profile: Profile?
 
-    init(entries: [Entry], budgets: [Budget]) {
+    init(entries: [Entry], budgets: [Budget], profile: Profile? = nil) {
+        self.profile = profile
         self.entries = entries.map {
             Item(id: $0.id, amountCents: $0.amountCents, merchant: $0.merchant,
                  category: $0.category.rawValue, date: $0.date, transcript: $0.transcript)
