@@ -2,11 +2,11 @@
 
 **Talk to your money, privately.** Yap Later is a voice-first expense tracker that runs entirely on your iPhone or your Mac, with Wi-Fi off. Hold a button and say "just spent fifty bucks on groceries at Walmart": it logs the expense, picks the category, counts it against your weekly budget, and warns you out loud when a budget is running low. No bank login, no account, no cloud.
 
-Built for Cornell's local AI hackathon, November 2026.
+Built for Cornell's Local AI Hackathon, November 2026. The theme was **Recreate**: take an existing AI app and remake it fully on-device. Yap Later recreates the AI budgeting assistant (the kind that asks for your bank login and thinks in the cloud) with speech recognition, the language model, and your data all on the device. It is for exactly the moments you have no signal or no wish to share: in a store basement, on a plane, abroad without data, or any time you would rather not hand a company your bank credentials.
 
 ## Why
 
-Budgeting apps want your bank credentials, and a lot of people won't hand those over. The alternative has been typing every purchase into a form, which nobody keeps up. Yap Later makes logging as easy as saying it, and keeps every word and every number on the phone.
+Budgeting apps want your bank credentials, and a lot of people won't hand those over. The alternative has been typing every purchase into a form, which nobody keeps up. Yap Later makes logging as easy as saying it, and keeps every word and every number on the device.
 
 ## What it does
 
@@ -32,7 +32,7 @@ Budgeting apps want your bank credentials, and a lot of people won't hand those 
 - **Understanding:** [Ternary Bonsai 2 4B](https://huggingface.co/prism-ml/Ternary-Bonsai-2-4B-gguf) (PrismML, Q2_0 GGUF, 1.2 GB) run in-process by [llama.cpp](https://github.com/ggml-org/llama.cpp) b12405 on the iPhone GPU. The model's output is constrained by a grammar to one JSON object, so it cannot ramble or "think" out loud.
 - **The model proposes; app code decides.** Swift code checks the amount, maps the category to a fixed set, resolves dates like "yesterday", and asks back when something is missing. The model never touches storage.
 - **Storage:** SwiftData on the device. No iCloud container, no network calls in the app.
-- **Interface:** SwiftUI, iOS 26.
+- **Interface:** SwiftUI; one codebase for iPhone (iOS 26) and Mac (macOS 26).
 
 ## Measured on an iPhone 17 Pro (iOS 26.6.2)
 
@@ -45,6 +45,19 @@ Budgeting apps want your bank credentials, and a lot of people won't hand those 
 | Live voice test (expense, ask-back answered by voice, budget set by voice, budget reduced by a second expense) | worked |
 
 The eval report is in [`eval/results/`](eval/results/). The eval sentences are synthetic; a few of the twenty-three overlap with example wording, so treat the score as a sanity check, not a benchmark. See [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) for what has and has not been verified, including the airplane-mode run.
+
+## Right-sized by measurement
+
+The sustainability question for local AI is whether the work is sized to the task. What Yap Later does, with what was and was not measured:
+
+- **The smallest model that passes.** Both ternary Bonsai 2 sizes were run on the same phone and sentences. The 2B got 12 of 20, the 4B 20 of 20 (now 23 of 23), so the app ships the 4B (1.2 GB) and nothing larger.
+- **One short model call per expense.** Output is limited by a grammar to a single JSON object of at most 140 tokens, with the model's reasoning block skipped. A reminder takes two calls.
+- **The fixed prompt is read once.** The 947-token instructions and examples are processed one time and restored from a saved snapshot for each request, so each yap only costs the new sentence.
+- **Plain code where a model is not needed.** Checking the amount, date math, budget math, the nudge wording, the follow-up question, and splitting a ramble are ordinary Swift, not model calls.
+- **A small speech model, only while you hold the button.** Whisper small (about 490 MB) instead of a larger one; no background listening.
+- **No server.** Nothing is sent anywhere, so there is no data-center inference at all.
+
+Not measured: energy or battery use. The latencies are in the table above; no claim is made here about joules or carbon.
 
 ## Honest limitations
 
@@ -92,4 +105,4 @@ Exact commands and results are in [`docs/COMMANDS.md`](docs/COMMANDS.md). Unit t
 
 ## Credits
 
-Ternary Bonsai 2 by PrismML. WhisperKit by Argmax. llama.cpp by ggml-org and contributors. Whisper by OpenAI. Project planning docs: [`START_HERE.md`](START_HERE.md), [`.plans/yap-later-spec.md`](.plans/yap-later-spec.md), [`docs/TICKETS.md`](docs/TICKETS.md).
+This project was written with AI coding assistance (cloud models), so it does not qualify for, and does not claim, the Locally Made subtrack. Ternary Bonsai 2 by PrismML. WhisperKit by Argmax. llama.cpp by ggml-org and contributors. Whisper by OpenAI. Project planning docs: [`START_HERE.md`](START_HERE.md), [`.plans/yap-later-spec.md`](.plans/yap-later-spec.md), [`docs/TICKETS.md`](docs/TICKETS.md).

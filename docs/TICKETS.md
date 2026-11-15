@@ -541,7 +541,7 @@ Done when:
 ### [T027] Fit the pitch and video to the rules: 2 minutes and the Recreate theme
 Area: demo
 Priority: must-have
-Status: ready
+Status: integrated
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T011
@@ -560,7 +560,7 @@ Done when:
 ### [T028] Make the repo ready to share with judges
 Area: submission
 Priority: must-have
-Status: ready
+Status: review
 Owner/session: unclaimed
 Timebox: 15 min
 Depends on: T022
@@ -579,7 +579,7 @@ Done when:
 ### [T029] Write the sustainability case with measured numbers
 Area: submission
 Priority: should-have
-Status: ready
+Status: integrated
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T014
