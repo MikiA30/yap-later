@@ -26,6 +26,7 @@ Project: `app/YapLater.xcodeproj` (hand-written, Xcode 26.6, folders synced from
 | llama.cpp framework | `scripts/fetch_llama.sh` (b12405) | Installed in `app/Vendor/`; device builds link and embed it, simulator builds skip it |
 | Copy models to the phone | `xcrun devicectl device copy to --device <id> --domain-type appDataContainer --domain-identifier com.mikiyas.yaplater --source <file or folder> --destination Documents/models/<file>` (GGUF) or `Documents/speech` (folder holding `openai_whisper-small` with its tokenizer files) | Done for Bonsai 2 2B, 4B, and Whisper small; they survive reinstalls |
 | Build and run, Mac | `scripts/setup_mac.sh`, then `open build/mac/Build/Products/Debug/YapLater.app`; eval: `YAP_EVAL=1 build/mac/Build/Products/Debug/YapLater.app/Contents/MacOS/YapLater` | 2026-11-15 08:29 EST: BUILD SUCCEEDED; eval 23/23, median 558 ms |
+| Demo week | `scripts/demo_week.sh mac\|iphone replace\|restore\|clear` | 2026-11-15 09:38 EST: loaded on the iPhone and the Mac; 15 demo entries, week total $270.28; the earlier ledgers are saved as `ledger-before-demo.json` on each device |
 | On-device model eval | launch with `--environment-variables '{"YAP_EVAL":"1"}'` and `--console`; add `"YAP_BONSAI":"2B"` to pick the 2B | 4B: 20/20; 2B: 12/20 |
 | Try sentences on the phone | `'{"YAP_TRY":"sentence one|sentence two"}'` | Used to debug the ask-back |
 | Speech self-test | `'{"YAP_SPEECH_EVAL":"1"}'` (the phone synthesizes phrases and transcribes them) | Number-word prompt confirmed |

@@ -10,33 +10,33 @@ import AppKit
 enum Theme {
     // MARK: Color
 
-    static let paper = Color(light: 0xFFF4E4, dark: 0x16131C)
-    static let card = Color(light: 0xFFFFFF, dark: 0x231F2C)
+    static let paper = Color(light: 0xFFF4E4, dark: 0x1A1512)
+    static let card = Color(light: 0xFFFFFF, dark: 0x2A221D)
     /// The warm wash at the top of the page, behind the greeting.
-    static let wash = Color(light: 0xFFDDB5, dark: 0x40242F)
+    static let wash = Color(light: 0xFFDDB5, dark: 0x4D2B1B)
     static let ink = Color(light: 0x1B1722, dark: 0xFFF4E4)
-    static let inkSoft = Color(light: 0x6F6878, dark: 0xA79FB2)
+    static let inkSoft = Color(light: 0x6F6878, dark: 0xB3A79B)
     /// The solid "edge" under cards and buttons that gives them depth.
     static let edge = Color(light: 0x1B1722, dark: 0x000000)
     static let brand = Color(light: 0xFF5A2B, dark: 0xFF6A3D)
     static let brandEdge = Color(light: 0xC73A12, dark: 0xB8370F)
     static let lemon = Color(light: 0xFFD23F, dark: 0xFFD23F)
     /// A budget that is running low.
-    static let warning = Color(light: 0xF2A100, dark: 0xFFB627)
-    static let danger = Color(light: 0xE5383B, dark: 0xFF5A5F)
+    static let warning = Color(light: 0xF2A100, dark: 0xEDB24A)
+    static let danger = Color(light: 0xE5383B, dark: 0xEC6B62)
     static let onBrand = Color.white
 
     static func color(for category: Category) -> Color {
         switch category {
-        case .groceries: Color(light: 0x1FA85F, dark: 0x35D07F)
-        case .dining: Color(light: 0xF57C00, dark: 0xFF9A2E)
-        case .coffee: Color(light: 0xA85B2A, dark: 0xD08A55)
-        case .transport: Color(light: 0x2166E8, dark: 0x5B95FF)
-        case .shopping: Color(light: 0xE83E8C, dark: 0xFF6FB0)
-        case .bills: Color(light: 0x5146D8, dark: 0x8E86FF)
-        case .fun: Color(light: 0x9333EA, dark: 0xB974FF)
-        case .health: Color(light: 0x0E9F94, dark: 0x2ED3C6)
-        case .other: Color(light: 0x6B7280, dark: 0x9CA3AF)
+        case .groceries: Color(light: 0x1FA85F, dark: 0x6FBE8C)
+        case .dining: Color(light: 0xF57C00, dark: 0xE6A25C)
+        case .coffee: Color(light: 0xA85B2A, dark: 0xC4936B)
+        case .transport: Color(light: 0x2166E8, dark: 0x7FA5DC)
+        case .shopping: Color(light: 0xE83E8C, dark: 0xDF8CAE)
+        case .bills: Color(light: 0x5146D8, dark: 0x9F98DC)
+        case .fun: Color(light: 0x9333EA, dark: 0xB893D9)
+        case .health: Color(light: 0x0E9F94, dark: 0x6FBFB6)
+        case .other: Color(light: 0x6B7280, dark: 0xA8A199)
         }
     }
 

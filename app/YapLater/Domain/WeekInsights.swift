@@ -38,7 +38,7 @@ struct WeekInsights: Equatable, Sendable {
     let averagePerDayCents: Int
 
     static func make(entries: [Entry], statuses: [BudgetStatus], now: Date,
-                     calendar: Calendar = .current) -> WeekInsights {
+                     calendar: Calendar = BudgetMath.calendar) -> WeekInsights {
         let week = BudgetMath.weekInterval(containing: now, calendar: calendar)
         let total = entries.reduce(0) { $0 + $1.amountCents }
         let todayStart = calendar.startOfDay(for: now)

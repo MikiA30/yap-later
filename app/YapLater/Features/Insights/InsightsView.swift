@@ -8,7 +8,6 @@ struct InsightsView: View {
 
     @State private var appeared = false
     @State private var selectedDay: Int?
-    @State private var dragX: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -30,22 +29,7 @@ struct InsightsView: View {
             }
             .scrollIndicators(.hidden)
         }
-        .offset(x: dragX)
-        .gesture(
-            DragGesture(minimumDistance: 20)
-                .onChanged { value in
-                    // Only a mostly sideways pull to the right moves the page.
-                    guard value.translation.width > 0, abs(value.translation.width) > abs(value.translation.height) else { return }
-                    dragX = value.translation.width
-                }
-                .onEnded { value in
-                    if value.translation.width > 110 || value.predictedEndTranslation.width > 260 {
-                        onClose()
-                    } else {
-                        withAnimation(Motion.present) { dragX = 0 }
-                    }
-                }
-        )
+        .swipeBack(onClose: onClose)
         .onAppear {
             selectedDay = insights.days.first(where: \.isToday)?.id
             if reduceMotion { appeared = true } else {
@@ -56,14 +40,7 @@ struct InsightsView: View {
 
     private var header: some View {
         HStack(spacing: Theme.Space.m) {
-            Button("Back", systemImage: "chevron.left", action: onClose)
-                .labelStyle(.iconOnly)
-                .font(.system(size: 17, weight: .heavy))
-                .foregroundStyle(Theme.ink)
-                .frame(width: 44, height: 44)
-                .background(Theme.card, in: Circle())
-                .background(Theme.edge.opacity(0.14), in: Circle().offset(y: 3))
-                .buttonStyle(.plain)
+            BackButton(action: onClose)
             Text("Your week")
                 .font(Theme.display(30))
                 .foregroundStyle(Theme.ink)
