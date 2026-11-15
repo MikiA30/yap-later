@@ -54,6 +54,8 @@ final class AppModel {
     let interpreterName: String
 
     var weekTotalCents: Int { entries.reduce(0) { $0 + $1.amountCents } }
+    /// The week summarized for the insights page, from stored entries and budgets.
+    var insights: WeekInsights { WeekInsights.make(entries: entries, statuses: budgetStatuses, now: now()) }
     var isBusy: Bool {
         switch phase {
         case .listening, .transcribing, .thinking: true

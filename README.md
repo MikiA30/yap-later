@@ -16,6 +16,7 @@ Budgeting apps want your bank credentials, and a lot of people won't hand those 
 - **Ramble.** "Fifty on groceries, twelve on lunch and six fifty on coffee" logs three expenses; one Undo removes all three.
 - **Reminders by voice.** "Remind me to call mom tomorrow at six pm" shows a card; tapping Save creates an Apple Reminder with an alert.
 - **Nudges.** When an expense pushes a budget low, you see and hear it: "Only $50 left for Groceries this week."
+- **Your week in charts.** The chart button opens a page with spending by day, a category ring you can tilt, and a short list of what deserves attention (budgets over or nearly used, the biggest expense, a simple pace projection). Every number comes from stored entries; no model writes them.
 - **Undo and edit.** Entries save immediately with an Undo, and any entry can be corrected by tapping it.
 - **Mac and iPhone, same app.** A Sync button is meant to copy the ledger between the two over Bluetooth with no internet. Its merge logic is tested, but the Bluetooth link has not yet been run between the two devices, so treat it as experimental.
 - **Action Button.** "Start a Yap" opens the app already listening.

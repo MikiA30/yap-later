@@ -12,6 +12,8 @@ struct YapDock: View {
     }
 
     @Bindable var model: AppModel
+    /// Opens the insights page.
+    var onInsights: () -> Void = {}
     @State private var levels: [Float] = Array(repeating: 0, count: 30)
     @State private var typing = false
     @State private var typedText = ""
@@ -37,9 +39,16 @@ struct YapDock: View {
                 Spacer()
                 YapButton(phase: model.phase, onPress: { model.beginYap() }, onRelease: { model.endYap() })
                 Spacer()
-                sideButton(systemImage: "xmark", label: "Cancel") { model.cancelYap() }
-                    .opacity(model.isBusy ? 1 : 0)
-                    .disabled(!model.isBusy)
+                // Cancel while the app is busy; otherwise the way to the charts.
+                ZStack {
+                    sideButton(systemImage: "xmark", label: "Cancel") { model.cancelYap() }
+                        .opacity(model.isBusy ? 1 : 0)
+                        .disabled(!model.isBusy)
+                    sideButton(systemImage: "chart.bar.xaxis", label: "Your week in charts", action: onInsights)
+                        .opacity(model.isBusy ? 0 : 1)
+                        .disabled(model.isBusy)
+                }
+                .animation(Motion.quick, value: model.isBusy)
             }
             .padding(.horizontal, Theme.Space.xxl)
         }

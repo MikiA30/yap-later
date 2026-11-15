@@ -12,6 +12,8 @@ enum Theme {
 
     static let paper = Color(light: 0xFFF4E4, dark: 0x16131C)
     static let card = Color(light: 0xFFFFFF, dark: 0x231F2C)
+    /// The warm wash at the top of the page, behind the greeting.
+    static let wash = Color(light: 0xFFDDB5, dark: 0x40242F)
     static let ink = Color(light: 0x1B1722, dark: 0xFFF4E4)
     static let inkSoft = Color(light: 0x6F6878, dark: 0xA79FB2)
     /// The solid "edge" under cards and buttons that gives them depth.
