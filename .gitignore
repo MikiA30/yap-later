@@ -23,3 +23,5 @@ __pycache__/
 *.pyc
 .venv/
 node_modules/
+.claude/worktrees/
+app/Vendor/

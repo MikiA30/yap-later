@@ -42,9 +42,7 @@ enum ProposalParser {
 
     static func parse(_ text: String) throws -> MoneyProposal {
         guard let json = firstJSONObject(in: text) else { throw ParseError.noJSON }
-        guard let object = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any] else {
-            throw ParseError.notAnObject
-        }
+        guard let object = try jsonObject(json) as? [String: Any] else { throw ParseError.notAnObject }
         let kind = (object["kind"] as? String).flatMap { MoneyProposal.Kind(rawValue: $0.lowercased()) } ?? .unsupported
         return MoneyProposal(
             kind: kind,
@@ -54,6 +52,13 @@ enum ProposalParser {
             datePhrase: string(object["date_phrase"]),
             period: string(object["period"])?.lowercased(),
             question: string(object["question"]))
+    }
+
+    /// Strict JSON first; then the lenient reader, which accepts trailing commas, single quotes, and bare keys.
+    private static func jsonObject(_ json: String) throws -> Any {
+        let data = Data(json.utf8)
+        if let strict = try? JSONSerialization.jsonObject(with: data) { return strict }
+        return try JSONSerialization.jsonObject(with: data, options: [.json5Allowed])
     }
 
     /// The first balanced `{ ... }` in the text, ignoring braces inside strings.
@@ -89,8 +94,10 @@ enum ProposalParser {
     private static func number(_ value: Any?) -> Double? {
         if let number = value as? NSNumber, !(value is Bool) { return number.doubleValue }
         if let text = value as? String {
-            let cleaned = text.filter { $0.isNumber || $0 == "." }
-            return Double(cleaned)
+            // "$6.50", "1,200", "50 dollars": keep the first run of digits and one decimal point.
+            let cleaned = text.replacingOccurrences(of: ",", with: "")
+            guard let match = cleaned.firstMatch(of: /\d+(?:\.\d+)?|\.\d+/) else { return nil }
+            return Double(match.0.hasPrefix(".") ? "0" + match.0 : String(match.0))
         }
         return nil
     }
