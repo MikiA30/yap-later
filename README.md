@@ -1,38 +1,81 @@
 # Yap Later
 
-An iPhone app that turns a natural-language request into a reviewed Apple Reminder, with interpretation on the phone and no runtime dependency on a Mac or cloud service.
+**Talk to your money, privately.** Yap Later is a voice-first expense tracker that runs entirely on your iPhone. Hold a button and say "just spent fifty bucks on groceries at Walmart": it logs the expense, picks the category, counts it against your weekly budget, and warns you out loud when a budget is running low. No bank login, no account, no cloud.
 
-**Status:** fresh planning starter. The specification and backlog are seeded from the pivot conversation; implementation and device evidence have not started here.
+Built for Cornell's local AI hackathon, November 2026.
 
-## Start
+## Why
 
-Open [START_HERE.md](START_HERE.md), then start a fresh Claude conversation from THIS folder:
+Budgeting apps want your bank credentials, and a lot of people won't hand those over. The alternative has been typing every purchase into a form, which nobody keeps up. Yap Later makes logging as easy as saying it, and keeps every word and every number on the phone.
 
-```sh
-cd '/Users/mikiyasasmamaw/Documents/ChatGPT/VocaLedger'
-claude
+## What it does
+
+- **Yap an expense.** "Grabbed lunch at Chipotle, thirteen forty five" becomes $13.45 · Dining · Chipotle.
+- **It asks when it isn't sure.** Say "grabbed a coffee" and it asks, out loud, "How much was it?" Answer by voice and the entry is completed. It never invents an amount.
+- **Weekly budgets by voice.** "Set my coffee budget to twenty five a week."
+- **Nudges.** When an expense pushes a budget low, you see and hear it: "Only $50 left for Groceries this week."
+- **Undo and edit.** Entries save immediately with an Undo, and any entry can be corrected by tapping it.
+- **Action Button.** "Start a Yap" opens the app already listening.
+
+## How it works
+
+```
+ hold to talk ──▶ Argmax WhisperKit ──▶ Ternary Bonsai 2 (4B) ──▶ app-code checks ──▶ SwiftData ──▶ budgets ──▶ nudge
+   microphone      speech to text        sentence to JSON          amount, category,     on-device      weekly      banner, voice,
+                   (on device)           via llama.cpp + Metal     date; ask if unsure   storage        totals      notification
+                                         (on device)
 ```
 
-Inside Claude, enter `/interview`. Johnathan Mo's published skill is already installed locally under that short name. Read the saved spec, then run `/kickoff` and `/tickets`. After the draft plan is settled, run `/skeleton`; then prioritize `/task T002` and `/task T003` for the two device proofs.
+- **Speech:** [Argmax WhisperKit](https://github.com/argmaxinc/argmax-oss-swift) 1.1.1 with the Whisper small Core ML model, loaded from the phone's storage. A vocabulary prompt makes it write amounts as words ("six fifty"), because the digits "650" lose the difference between $6.50 and $650.
+- **Understanding:** [Ternary Bonsai 2 4B](https://huggingface.co/prism-ml/Ternary-Bonsai-2-4B-gguf) (PrismML, Q2_0 GGUF, 1.2 GB) run in-process by [llama.cpp](https://github.com/ggml-org/llama.cpp) b12405 on the iPhone GPU. The model's output is constrained by a grammar to one JSON object, so it cannot ramble or "think" out loud.
+- **The model proposes; app code decides.** Swift code checks the amount, maps the category to a fixed set, resolves dates like "yesterday", and asks back when something is missing. The model never touches storage.
+- **Storage:** SwiftData on the device. No iCloud container, no network calls in the app.
+- **Interface:** SwiftUI, iOS 26.
 
-The old ket-lite project is preserved separately. This repository starts with no remote or GitHub issues. Stable local ticket keys are not issue numbers.
+## Measured on an iPhone 17 Pro (iOS 26.6.2)
 
-## Files to know
-
-| File | Purpose |
+| What | Result |
 |---|---|
-| `ideation/PROJECT_BRIEF.md` | Known product and device context |
-| `.plans/yap-later-spec.md` | Seeded spec and unresolved interview decisions |
-| `docs/PLAN.md` | Smallest demo and sequence |
-| `docs/FEASIBILITY.md` | Device proof gates and result template |
-| `docs/ARCHITECTURE.md` | Proposed Swift modules and ownership |
-| `docs/CONTRACTS.md` | Interpretation, validation, confirmation, and save boundaries |
-| `contracts/reminder-proposal.schema.json` | Proposed model-output format |
-| `docs/TICKETS.md` | Concrete draft tasks and dependencies |
-| `docs/COMMANDS.md` | Verified commands versus unverified app setup |
-| `docs/DEMO.md` | Rehearsal and submission checklist |
-| `docs/PREPARATION.md` | Provenance and work record |
+| Bonsai 2 4B on a 20-sentence eval (expenses, number words, missing amounts, budgets, off-topic) | 20/20 correct, median 1.4 s per request |
+| Bonsai 2 2B on the same eval | 12/20 correct, about 0.7 s per request; we ship the 4B |
+| Model load (4B) | about 0.3 s warm, 1.2 to 1.6 s cold |
+| WhisperKit transcription of a 2 to 6 s yap | 0.25 to 0.85 s |
+| Live voice test (expense, ask-back answered by voice, budget set by voice, budget reduced by a second expense) | worked |
 
-The `.claude/skills/interview/` skill is copied unchanged with its license. Other slash commands in `.claude/commands/` call portable workflow instructions in `prompts/`. These documents can also guide another coding tool.
+The eval report is in [`eval/results/`](eval/results/). The eval sentences are synthetic; five of the twenty overlap with example wording, so treat the score as a sanity check, not a benchmark. See [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) for what has and has not been verified, including the airplane-mode run.
 
-Run `python3 scripts/check_setup.py` to check setup consistency. This does not build an app or establish iPhone compatibility.
+## Honest limitations
+
+- English and US dollars only; one expense per yap.
+- The check that an amount was really said is basic: it confirms a number was spoken, not which one.
+- If no Bonsai file is on the phone, the app falls back to Apple's on-device model, and to a labeled MOCK if neither is available. The header shows which.
+- The spoken voice is iOS's built-in synthesizer.
+- Bill reminders and location nudges are designed but not built.
+
+## Build and run
+
+Requirements: Xcode 26.6, an iPhone on iOS 26, about 2 GB free on the phone.
+
+```sh
+scripts/fetch_llama.sh                      # llama.cpp iOS framework into app/Vendor (not in Git)
+open app/YapLater.xcodeproj                 # set your signing team, build to your iPhone
+```
+
+Then copy the models into the app's Documents folder (they are not in Git):
+
+```sh
+# Bonsai 2 4B, Q2_0: https://huggingface.co/prism-ml/Ternary-Bonsai-2-4B-gguf
+xcrun devicectl device copy to --device <id> --domain-type appDataContainer \
+  --domain-identifier com.mikiyas.yaplater --source Ternary-Bonsai-2-4B-Q2_0.gguf \
+  --destination Documents/models/Ternary-Bonsai-2-4B-Q2_0.gguf
+# Whisper small for WhisperKit (argmaxinc/whisperkit-coreml: openai_whisper-small, plus tokenizer.json
+# and tokenizer_config.json from openai/whisper-small in the same folder)
+xcrun devicectl device copy to --device <id> --domain-type appDataContainer \
+  --domain-identifier com.mikiyas.yaplater --source speech --destination Documents/speech
+```
+
+Exact commands and results are in [`docs/COMMANDS.md`](docs/COMMANDS.md). Unit tests: `xcodebuild test -project app/YapLater.xcodeproj -scheme YapLater -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO` (the simulator uses mock speech and has no llama framework).
+
+## Credits
+
+Ternary Bonsai 2 by PrismML. WhisperKit by Argmax. llama.cpp by ggml-org and contributors. Whisper by OpenAI. Project planning docs: [`START_HERE.md`](START_HERE.md), [`.plans/yap-later-spec.md`](.plans/yap-later-spec.md), [`docs/TICKETS.md`](docs/TICKETS.md).

@@ -74,7 +74,7 @@ struct YapDock: View {
                 VStack(spacing: Theme.Space.s) {
                     Waveform(levels: levels)
                         .frame(height: 56)
-                    Text("Listening… let go when you're done")
+                    Text("Listening… let go, or tap the button, when you're done")
                         .font(Theme.caption).foregroundStyle(Theme.inkSoft)
                 }
                 .transition(.opacity)
@@ -201,7 +201,8 @@ struct YapButton: View {
                 .onChanged { _ in
                     guard !held else { return }
                     held = true
-                    onPress()
+                    // Already listening (started by the Action Button): this press just ends it on release.
+                    if !listening { onPress() }
                 }
                 .onEnded { _ in
                     held = false

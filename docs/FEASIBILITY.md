@@ -2,14 +2,21 @@
 
 All gates begin **NOT RUN**. A compiled simulator build, Mac model response, or screenshot is insufficient for a gate requiring real iPhone behavior.
 
-| Gate | Task | Required evidence | Status |
+| Gate | Task | Evidence | Status |
 |---|---|---|---|
-| G0: device launch | T001 | Physical iPhone model/iOS, signing path, successful signed app launch | NOT RUN on the phone (iPhone not connected at 03:22). Simulator only: build, 5 unit tests, and launch passed |
-| G1: local model | T002 | Exact checkpoint/revision/quantization/runtime, offline text output, cold/warm latency, memory if measurable, repeated requests | NOT RUN |
-| G2: Apple Reminder | T003 | Permission result, writable list, saved reminder with due date and alarm, locked-phone alert with networking off | NOT RUN |
-| G3: full offline loop | T011 | Cold launch, fresh typed input, valid reviewed draft, save, and observed alert with no Mac/cloud dependency | NOT RUN |
-| G4: on-device speech | T020 | WhisperKit package/model version, three spoken reminders transcribed offline on the iPhone, latency | NOT RUN |
-| G1-fallback: Foundation Models | T016 | Only if G1 fails by 06:30: Apple Intelligence enabled, structured proposal returned offline on the iPhone | NOT RUN |
+| G0: device launch | T001 | iPhone 17 Pro (iPhone18,1), iOS 26.6.2, Personal Team signing, launched 2026-11-15 03:43 EST | **PASS** |
+| G1: local model | T002, T016 | Ternary Bonsai 2 4B Q2_0 GGUF (1,212 MB) via llama.cpp b12405 xcframework, Metal, grammar-constrained JSON. 20/20 on the built-in eval, median 1.4 s, load 0.2 to 1.6 s (`eval/results/bonsai-2-4b-iphone17pro-2026-11-15.txt`). 2B Q2_0: 12/20, about 0.7 s. The phone was online during these runs | **PASS on device; offline run pending (G3)** |
+| G2: nudge notification | T003 | Permission prompt and in-app spoken nudge seen by the user; a notification on the locked phone has not been observed | NOT RUN |
+| G3: full offline loop | T011 | Cold launch in airplane mode with the Mac unplugged, full demo script | NOT RUN |
+| G4: on-device speech | T020 | WhisperKit 1.1.1, openai_whisper-small copied to the phone; live yaps by the user transcribed in 0.25 to 0.85 s; number-word prompt verified with synthetic speech and the user's voice. The phone was online | **PASS on device; offline run pending (G3)** |
+| G1-fallback: Foundation Models | T016 | Compiles and is wired as a labeled fallback; not exercised on the phone because Bonsai is present | NOT RUN |
+
+Findings worth keeping:
+
+- Bonsai 2 is a `qwen35` architecture. llama.cpp could not trim its memory in place between requests (`llama_memory_seq_rm` on a partial range), which leaked the previous answer into the next request. The app now restores a saved snapshot of the memory after the fixed prompt prefix (869 tokens, 77 MB) for every request.
+- Putting the examples in the prompt as earlier chat turns, instead of inside the instructions, took the 2B from 8/20 to 12/20.
+- Whisper writes "six fifty" as "650" unless prompted with spelled-out amounts.
+- After each fresh install the first WhisperKit load is slow (Core ML recompiles); later launches are fast.
 
 ## G1 approach
 
