@@ -2,6 +2,7 @@
 # Builds Yap Later for an Apple Silicon Mac and downloads the two models it needs.
 # Needs a network connection once; after that the app runs with Wi-Fi off.
 # No Apple developer account is needed: the Mac build is signed to run locally.
+# Add --voice to also download the Argmax text-to-speech voice (about 1.1 GB).
 set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ASSETS="$HOME/Library/Application Support/YapLater"
@@ -46,4 +47,14 @@ xcodebuild -project "$ROOT/app/YapLater.xcodeproj" -scheme YapLater -configurati
 APP="$ROOT/build/mac/Build/Products/Debug/YapLater.app"
 [ -d "$APP" ] || { echo "The build did not produce $APP"; exit 1; }
 echo "Built $APP"
+
+# Optional: the Argmax voice (Qwen3-TTS 0.6B through TTSKit, about 1.1 GB). Without it the app uses the system voice.
+if [ "${1:-}" = "--voice" ] && [ ! -d "$ASSETS/tts/models/argmaxinc/ttskit-coreml/qwen3_tts" ]; then
+  echo "Downloading the Argmax voice (about 1.1 GB)..."
+  mkdir -p "$ASSETS/tts/tokenizer"
+  for f in tokenizer.json tokenizer_config.json config.json; do
+    curl -fsL -o "$ASSETS/tts/tokenizer/$f" "https://huggingface.co/Qwen/Qwen3-0.6B/resolve/main/$f"
+  done
+  YAP_TTS=download-only "$APP/Contents/MacOS/YapLater" 2>&1 | grep -E "^TTS" || true
+fi
 echo "Run it with:  open \"$APP\"   (then turn Wi-Fi off and hold the orange button to talk)"

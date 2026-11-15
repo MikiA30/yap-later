@@ -29,6 +29,7 @@ Budgeting apps want your bank credentials, and a lot of people won't hand those 
 ```
 
 - **Speech:** [Argmax WhisperKit](https://github.com/argmaxinc/argmax-oss-swift) 1.1.1 with the Whisper small Core ML model, loaded from the phone's storage. A vocabulary prompt makes it write amounts as words ("six fifty"), because the digits "650" lose the difference between $6.50 and $650.
+- **Voice:** on the Mac, questions and nudges are spoken by [Argmax TTSKit](https://github.com/argmaxinc/argmax-oss-swift) (Qwen3-TTS 0.6B as Core ML, about 1.1 GB) when its model is present; first audio arrived in 0.2 to 0.5 s there. On the iPhone the same code is installed but stays off until it has been checked with the microphone on that phone, so the phone speaks with the system voice for now.
 - **Understanding:** [Ternary Bonsai 2 4B](https://huggingface.co/prism-ml/Ternary-Bonsai-2-4B-gguf) (PrismML, Q2_0 GGUF, 1.2 GB) run in-process by [llama.cpp](https://github.com/ggml-org/llama.cpp) b12405 on the iPhone GPU. The model's output is constrained by a grammar to one JSON object, so it cannot ramble or "think" out loud.
 - **The model proposes; app code decides.** Swift code checks the amount, maps the category to a fixed set, resolves dates like "yesterday", and asks back when something is missing. The model never touches storage.
 - **Storage:** SwiftData on the device. No iCloud container, no network calls in the app.
@@ -65,7 +66,7 @@ Not measured: energy or battery use. The latencies are in the table above; no cl
 - A yap with several expenses is split in app code at commas and joining words, one amount per part; if any part is not a clear expense, the whole yap is treated as one request.
 - The app checks that the proposed amount matches a number you said; unusual phrasings of amounts may make it ask again.
 - If no Bonsai file is on the phone, the app falls back to Apple's on-device model, and to a labeled MOCK if neither is available. The header shows which.
-- The spoken voice is iOS's built-in synthesizer.
+- The spoken voice on the iPhone is iOS's built-in synthesizer; the Argmax voice has only been verified on the Mac.
 - Reminders are saved to Apple Reminders only after you tap Save. Location nudges are designed but not built.
 
 ## Build and run
@@ -74,6 +75,7 @@ Not measured: energy or battery use. The latencies are in the table above; no cl
 
 ```sh
 scripts/setup_mac.sh        # fetches llama.cpp, downloads Bonsai 2 4B and Whisper small once, builds the app
+                            # add --voice to also download the Argmax voice (1.1 GB); otherwise the system voice is used
 open build/mac/Build/Products/Debug/YapLater.app
 ```
 

@@ -597,7 +597,7 @@ Done when:
 ### [T030] Speak with Argmax text-to-speech instead of the system voice
 Area: speech
 Priority: stretch
-Status: ready
+Status: review
 Owner/session: unclaimed
 Timebox: 60 min
 Depends on: T026

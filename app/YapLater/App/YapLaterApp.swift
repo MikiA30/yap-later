@@ -32,6 +32,29 @@ struct YapLaterApp: App {
                         }
                         print("YAPTRY-END")
                     }
+                    #if canImport(TTSKit)
+                    if let line = ProcessInfo.processInfo.environment["YAP_TTS"] {
+                        // Debug: load the Argmax voice (downloading it once if needed) and speak a line.
+                        let speaker = ArgmaxSpeaker()
+                        speaker.prepare(download: true)
+                        while !speaker.isReady { try? await Task.sleep(for: .milliseconds(300)) }
+                        if line == "download-only" { print("YAPTTS-END"); exit(0) }
+                        speaker.speak(line)
+                        try? await Task.sleep(for: .seconds(12))
+                        speaker.speak("Only fifty dollars left for groceries this week.")
+                        try? await Task.sleep(for: .seconds(12))
+                        // The microphone must still work right after the voice has played.
+                        speaker.stop()
+                        if ProcessInfo.processInfo.environment["YAP_TTS_MIC"] != nil { do {
+                            try await AppEnvironment.sharedWhisper.prepare()
+                            try await AppEnvironment.sharedWhisper.start { _ in }
+                            try? await Task.sleep(for: .seconds(2))
+                            let heard = try await AppEnvironment.sharedWhisper.stop()
+                            print("YAPTTS microphone after voice: ok, heard \"\(heard)\"")
+                        } catch { print("YAPTTS microphone after voice: FAILED \(error)") } }
+                        print("YAPTTS-END")
+                    }
+                    #endif
                     if ProcessInfo.processInfo.environment["YAP_SPEECH_EVAL"] != nil {
                         print("YAPLATER-SPEECH-BEGIN\n" + (await SpeechEval.run(AppEnvironment.sharedWhisper)) + "\nYAPLATER-SPEECH-END")
                     }
@@ -81,8 +104,20 @@ enum AppEnvironment {
         let interpreter = sharedInterpreter
         let store: any LedgerStore = (try? SwiftDataLedgerStore()) ?? InMemoryLedgerStore()
         return AppModel(transcriber: transcriber, interpreter: interpreter, store: store,
-                        speaker: SystemSpeaker(), notifier: SystemNudgeNotifier(),
+                        speaker: makeSpeaker(), notifier: SystemNudgeNotifier(),
                         reminders: EventKitReminderSaver(), reminderLog: ReminderLog())
+    }
+
+    /// The Argmax voice when its model is on the device (and `YAP_VOICE=system` is not set); otherwise the system voice.
+    static func makeSpeaker() -> any Speaker {
+        #if canImport(TTSKit)
+        if ArgmaxSpeaker.isEnabled, ProcessInfo.processInfo.environment["YAP_VOICE"] != "system" {
+            let speaker = ArgmaxSpeaker()
+            speaker.prepare()
+            return speaker
+        }
+        #endif
+        return SystemSpeaker()
     }
 
     /// Sponsor model first (Bonsai 2 via llama.cpp, when its file is on the phone), then Apple's on-device
