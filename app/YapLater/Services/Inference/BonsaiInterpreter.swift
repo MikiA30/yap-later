@@ -25,7 +25,7 @@ actor BonsaiInterpreter: MoneyInterpreter {
     /// With several present, `-bonsai 2B` (or `YAP_BONSAI=2B`) picks one; otherwise the largest wins:
     /// on the iPhone 17 Pro the 4B scored 18/20 against the 2B's 12/20 on the built-in eval.
     static func provisionedModel() -> URL? {
-        guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        guard let documents = LocalAssets.root else { return nil }
         let folder = documents.appendingPathComponent("models", isDirectory: true)
         let files = ((try? FileManager.default.contentsOfDirectory(
             at: folder, includingPropertiesForKeys: [.fileSizeKey])) ?? [])

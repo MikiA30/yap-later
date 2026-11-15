@@ -1,5 +1,9 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#else
+import AppKit
+#endif
 
 /// Yap Later's look: warm paper, dark ink, one loud brand color, and a color per category.
 /// Views take every color, size, and radius from here.
@@ -67,11 +71,20 @@ enum Theme {
 extension Color {
     /// A color that follows light and dark mode, from two hex values.
     init(light: UInt32, dark: UInt32) {
+        func parts(_ hex: UInt32) -> (CGFloat, CGFloat, CGFloat) {
+            (CGFloat((hex >> 16) & 0xFF) / 255, CGFloat((hex >> 8) & 0xFF) / 255, CGFloat(hex & 0xFF) / 255)
+        }
+        #if canImport(UIKit)
         self.init(uiColor: UIColor { traits in
-            let hex = traits.userInterfaceStyle == .dark ? dark : light
-            return UIColor(red: CGFloat((hex >> 16) & 0xFF) / 255,
-                           green: CGFloat((hex >> 8) & 0xFF) / 255,
-                           blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
+            let (red, green, blue) = parts(traits.userInterfaceStyle == .dark ? dark : light)
+            return UIColor(red: red, green: green, blue: blue, alpha: 1)
         })
+        #else
+        self.init(nsColor: NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            let (red, green, blue) = parts(isDark ? dark : light)
+            return NSColor(srgbRed: red, green: green, blue: blue, alpha: 1)
+        })
+        #endif
     }
 }

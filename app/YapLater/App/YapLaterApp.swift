@@ -13,6 +13,9 @@ struct YapLaterApp: App {
     var body: some Scene {
         WindowGroup {
             RootView(model: model)
+                #if os(macOS)
+                .frame(width: 430, height: 860) // the phone layout, in a fixed window
+                #endif
                 .task {
                     #if DEBUG
                     if let scenario = AppEnvironment.scenario {
@@ -41,6 +44,9 @@ struct YapLaterApp: App {
                     await model.prepare()
                 }
         }
+        #if os(macOS)
+        .windowResizability(.contentSize)
+        #endif
     }
 }
 
