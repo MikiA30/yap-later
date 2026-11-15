@@ -12,8 +12,10 @@ actor BonsaiInterpreter: MoneyInterpreter {
     private var model: OpaquePointer?
     private var context: OpaquePointer?
     private var vocab: OpaquePointer?
-    /// Prompt tokens currently in the model's memory, so an unchanged prefix (the instructions) is not re-read.
-    private var evaluated: [llama_token] = []
+    /// The fixed start of every prompt (rules and example turns) and the model's memory right after reading
+    /// it. Each request restores this snapshot, so it starts clean and never sees an earlier request.
+    private var prefixTokens: [llama_token] = []
+    private var prefixState: [UInt8] = []
     private var suppressThinking = false
 
     init(modelURL: URL) {
@@ -87,19 +89,24 @@ actor BonsaiInterpreter: MoneyInterpreter {
             throw InterpreterError.generationFailed("That was too long for the model.")
         }
 
-        // Keep whatever prefix is already in memory; read only what changed.
-        var common = zip(tokens, evaluated).prefix { $0 == $1 }.count
-        if common == tokens.count { common -= 1 }
-        llama_memory_seq_rm(llama_get_memory(context), 0, Int32(common), -1)
-        let remaining = tokens.count - common
+        // Start from a clean memory every time: restore the snapshot taken after the fixed prefix,
+        // or read the whole prompt if there is no usable snapshot.
+        let memory = llama_get_memory(context)
+        llama_memory_clear(memory, true)
+        var start = 0
+        if prefixTokens.isEmpty { snapshotPrefix(of: turns, context: context, vocab: vocab) ; llama_memory_clear(memory, true) }
+        if !prefixState.isEmpty, tokens.count > prefixTokens.count, Array(tokens[0..<prefixTokens.count]) == prefixTokens,
+           llama_state_seq_set_data(context, prefixState, prefixState.count, 0) > 0 {
+            start = prefixTokens.count
+        } else {
+            llama_memory_clear(memory, true)
+        }
         let status = tokens.withUnsafeMutableBufferPointer { buffer in
-            llama_decode(context, llama_batch_get_one(buffer.baseAddress! + common, Int32(remaining)))
+            llama_decode(context, llama_batch_get_one(buffer.baseAddress! + start, Int32(buffer.count - start)))
         }
         guard status == 0 else {
-            evaluated = []
             throw InterpreterError.generationFailed("The model could not read the sentence (\(status)).")
         }
-        evaluated = tokens
 
         let sampler = llama_sampler_chain_init(llama_sampler_chain_default_params())
         defer { llama_sampler_free(sampler) }
@@ -129,6 +136,30 @@ actor BonsaiInterpreter: MoneyInterpreter {
         } catch {
             throw InterpreterError.generationFailed("The model's answer was not readable.")
         }
+    }
+
+    /// Reads the part of the prompt that never changes and keeps a copy of the model's memory after it.
+    private func snapshotPrefix(of turns: [(role: String, content: String)], context: OpaquePointer, vocab: OpaquePointer) {
+        // Two prompts that differ only in the final sentence share exactly the fixed prefix.
+        var probe = turns
+        probe[probe.count - 1].content = InterpreterPrompt.sentenceLine("Zq")
+        var other = turns
+        other[other.count - 1].content = InterpreterPrompt.sentenceLine("7 x")
+        let first = tokenize(buildPrompt(probe), vocab: vocab), second = tokenize(buildPrompt(other), vocab: vocab)
+        let shared = zip(first, second).prefix { $0 == $1 }.count - 2 // stop short of the token that may merge
+        guard shared > 16 else { return }
+        var prefix = Array(first[0..<shared])
+        let status = prefix.withUnsafeMutableBufferPointer { buffer in
+            llama_decode(context, llama_batch_get_one(buffer.baseAddress!, Int32(buffer.count)))
+        }
+        guard status == 0 else { return }
+        let size = llama_state_seq_get_size(context, 0)
+        guard size > 0 else { return }
+        var state = [UInt8](repeating: 0, count: size)
+        guard llama_state_seq_get_data(context, &state, size, 0) == size else { return }
+        prefixTokens = prefix
+        prefixState = state
+        print("BONSAI prefix snapshot: \(prefix.count) tokens, \(size / 1_048_576) MB")
     }
 
     /// Uses the model's own chat template when llama.cpp recognizes it; otherwise ChatML.

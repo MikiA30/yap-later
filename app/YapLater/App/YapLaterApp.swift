@@ -14,10 +14,17 @@ struct YapLaterApp: App {
         WindowGroup {
             RootView(model: model)
                 .task {
-                    await model.prepare()
                     #if DEBUG
                     if let scenario = AppEnvironment.scenario {
                         await DebugScenarios.run(scenario, model: model)
+                    }
+                    if let sentences = ProcessInfo.processInfo.environment["YAP_TRY"] {
+                        // Debug: run "a|b|c" through the active interpreter and print what it proposes.
+                        for sentence in sentences.split(separator: "|").map(String.init) {
+                            let result = try? await AppEnvironment.sharedInterpreter.interpret(InterpretationRequest(transcript: sentence))
+                            print("YAPTRY \(sentence) => \(result.map { "\($0.kind.rawValue) amount=\($0.amount.map { String($0) } ?? "nil") category=\($0.category ?? "nil")" } ?? "error")")
+                        }
+                        print("YAPTRY-END")
                     }
                     if ProcessInfo.processInfo.environment["YAP_SPEECH_EVAL"] != nil {
                         print("YAPLATER-SPEECH-BEGIN\n" + (await SpeechEval.run(AppEnvironment.sharedWhisper)) + "\nYAPLATER-SPEECH-END")
@@ -28,6 +35,7 @@ struct YapLaterApp: App {
                         print("YAPLATER-EVAL-BEGIN \(interpreter.name)\n" + (await InterpreterEval.run(interpreter)) + "\nYAPLATER-EVAL-END")
                     }
                     #endif
+                    await model.prepare()
                 }
         }
     }

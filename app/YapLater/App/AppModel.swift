@@ -214,7 +214,9 @@ final class AppModel {
         }
         transcript = text
         phase = .thinking
-        let combined = pendingContext.map { "\($0). \(text)" } ?? text
+        let combined = pendingContext.map {
+            "\($0.trimmingCharacters(in: .punctuationCharacters.union(.whitespaces))). \(text)"
+        } ?? text
         let request = InterpretationRequest(transcript: combined, referenceInstant: now())
 
         let proposal: MoneyProposal
