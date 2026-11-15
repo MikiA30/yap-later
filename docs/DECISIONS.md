@@ -22,5 +22,9 @@
 | 2026-11-15 | User | Voice is the hero (WhisperKit must-have); ask back by voice on ambiguity; expenses auto-save with undo; playful and bold look; Action Button trigger; demo week pre-logged through the app |
 | 2026-11-15 | User | No AI contributor on commits or PRs: no co-author trailer, no generated-by line |
 | 2026-11-15 | Proposal | Fixed categories, USD integer cents, SwiftData, nudge threshold, AVSpeechSynthesizer for spoken questions: see the spec's product rules |
+| 2026-11-15 | User | Use the sponsor models: Bonsai 2 (2B or 4B) and Argmax for voice |
+| 2026-11-15 | Evidence | Interpreter locked: **Ternary Bonsai 2 4B Q2_0 via llama.cpp b12405** (20/20 on the iPhone eval vs. 12/20 for 2B). Apple Foundation Models stays as a labeled fallback only. Supersedes the 05:15 fallback proposal |
+| 2026-11-15 | Evidence | Speech: WhisperKit 1.1.1 with openai_whisper-small and a number-word prompt |
+| 2026-11-15 | User | Work in one session, not parallel agents, to conserve usage; Claude may merge its own PRs once checks pass |
 
 Preserve superseded decisions with the replacement and reason. Do not mark a proposal accepted merely because it appears in the draft backlog.

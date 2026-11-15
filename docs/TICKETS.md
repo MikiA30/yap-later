@@ -1,6 +1,6 @@
 # Yap Later tickets
 
-Revised 2026-11-15 03:35 EST after the interview (`.plans/yap-later-spec.md`): **voice-first, fully local expense tracker; deadline 8:30 AM today.** No implementation is complete. GitHub issues in `MikiA30/yap-later` mirror these tickets (key T0NN = issue #NN for T001–T023); this file is the source of dependencies and done-when criteria.
+Status as of 2026-11-15 04:35 EST: the core loop works on the iPhone with Bonsai 2 4B and WhisperKit; the airplane-mode acceptance (T011) is next. Revised 2026-11-15 03:35 EST after the interview (`.plans/yap-later-spec.md`): **voice-first, fully local expense tracker; deadline 8:30 AM today.** No implementation is complete. GitHub issues in `MikiA30/yap-later` mirror these tickets (key T0NN = issue #NN for T001–T023); this file is the source of dependencies and done-when criteria.
 
 **Order.** Device shell → speech and model gates in parallel with pure-Swift domain work → store and UI → integrated voice loop → motion → offline acceptance → judge materials. **Feature freeze 07:15.** Bonsai hard stop **05:15**, then T016 locks the interpreter.
 
@@ -41,7 +41,7 @@ Revised 2026-11-15 03:35 EST after the interview (`.plans/yap-later-spec.md`): *
 ### [T001] Create the signed iPhone shell with a labeled mock yap flow
 Area: foundation
 Priority: must-have
-Status: in-progress
+Status: integrated
 Owner/session: Claude Code main session
 Timebox: 40 min
 Depends on: none
@@ -60,7 +60,7 @@ Done when:
 ### [T002] Prove a supported Bonsai model on the actual iPhone
 Area: inference
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: hard stop 05:15 EST, then T016 decides
 Depends on: T001
@@ -79,7 +79,7 @@ Done when:
 ### [T003] Prove the budget nudge notification offline
 Area: notifications
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T001
@@ -98,7 +98,7 @@ Done when:
 ### [T004] Define the money contracts and fixtures
 Area: domain
 Priority: must-have
-Status: queued
+Status: in-progress
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T001
@@ -117,7 +117,7 @@ Done when:
 ### [T005] Implement on-device money interpretation
 Area: inference
 Priority: must-have
-Status: queued
+Status: integrated
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T004, T016
@@ -136,7 +136,7 @@ Done when:
 ### [T006] Validate proposals and compute weekly budgets
 Area: domain
 Priority: must-have
-Status: queued
+Status: in-progress
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T004
@@ -155,7 +155,7 @@ Done when:
 ### [T007] Build the yap, ledger, and budget screens
 Area: ui
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 45 min
 Depends on: T004, T017
@@ -174,7 +174,7 @@ Done when:
 ### [T008] Store entries and budgets locally with undo
 Area: store
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T004
@@ -193,7 +193,7 @@ Done when:
 ### [T009] Connect the complete voice-to-budget loop
 Area: integration
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T003, T005, T006, T008, T012
@@ -231,7 +231,7 @@ Done when:
 ### [T011] Run full real-device offline acceptance
 Area: acceptance
 Priority: must-have
-Status: queued
+Status: ready
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T010
@@ -250,7 +250,7 @@ Done when:
 ### [T012] Add hold-to-talk and voice ask-back
 Area: speech
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T007, T020
@@ -326,7 +326,7 @@ Done when:
 ### [T016] Lock the on-device interpreter (Bonsai or fallback)
 Area: inference
 Priority: must-have
-Status: queued
+Status: integrated
 Owner/session: unclaimed
 Timebox: 15 min decision; fallback build up to 30 min
 Depends on: T002
@@ -345,7 +345,7 @@ Done when:
 ### [T017] Establish the playful, bold visual identity
 Area: design
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T001
@@ -364,7 +364,7 @@ Done when:
 ### [T018] Build the signature transitions and motion
 Area: design
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 25 min
 Depends on: T007, T017
@@ -383,7 +383,7 @@ Done when:
 ### [T019] Start a yap from the Action Button
 Area: intents
 Priority: should-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 15 min
 Depends on: T009
@@ -402,7 +402,7 @@ Done when:
 ### [T020] Prove WhisperKit transcription offline on the iPhone
 Area: speech
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 40 min
 Depends on: T001
@@ -440,7 +440,7 @@ Done when:
 ### [T022] Write the judge-facing README
 Area: submission
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: unclaimed
 Timebox: 15 min
 Depends on: T009
@@ -459,7 +459,7 @@ Done when:
 ### [T023] Record the demo video and write the pitch
 Area: submission
 Priority: must-have
-Status: queued
+Status: review
 Owner/session: user + Claude
 Timebox: 20 min
 Depends on: T011
