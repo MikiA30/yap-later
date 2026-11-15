@@ -13,6 +13,7 @@ Budgeting apps want your bank credentials, and a lot of people won't hand those 
 - **Yap an expense.** "Grabbed lunch at Chipotle, thirteen forty five" becomes $13.45 · Dining · Chipotle.
 - **It asks when it isn't sure.** Say "grabbed a coffee" and it asks, out loud, "How much was it?" Answer by voice and the entry is completed. It never invents an amount.
 - **Weekly budgets by voice.** "Set my coffee budget to twenty five a week."
+- **Ramble.** "Fifty on groceries, twelve on lunch and six fifty on coffee" logs three expenses; one Undo removes all three.
 - **Reminders by voice.** "Remind me to call mom tomorrow at six pm" shows a card; tapping Save creates an Apple Reminder with an alert.
 - **Nudges.** When an expense pushes a budget low, you see and hear it: "Only $50 left for Groceries this week."
 - **Undo and edit.** Entries save immediately with an Undo, and any entry can be corrected by tapping it.
@@ -47,7 +48,8 @@ The eval report is in [`eval/results/`](eval/results/). The eval sentences are s
 
 ## Honest limitations
 
-- English and US dollars only; one expense per yap.
+- English and US dollars only.
+- A yap with several expenses is split in app code at commas and joining words, one amount per part; if any part is not a clear expense, the whole yap is treated as one request.
 - The app checks that the proposed amount matches a number you said; unusual phrasings of amounts may make it ask again.
 - If no Bonsai file is on the phone, the app falls back to Apple's on-device model, and to a labeled MOCK if neither is available. The header shows which.
 - The spoken voice is iOS's built-in synthesizer.

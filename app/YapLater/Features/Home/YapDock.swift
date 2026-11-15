@@ -146,7 +146,7 @@ struct YapDock: View {
                     .transition(bubbleTransition)
                     .accessibilityElement(children: .combine)
                 } else if let saved = model.lastSaved {
-                    SavedToast(entry: saved) { model.undoLast() }
+                    SavedToast(entry: saved, group: model.lastSavedGroup) { model.undoLast() }
                         .transition(bubbleTransition)
                         .id(saved.id)
                 } else {
@@ -299,15 +299,20 @@ struct ReminderCard: View {
 /// Confirms what was just saved and offers Undo for a few seconds.
 struct SavedToast: View {
     let entry: Entry
+    /// All entries the yap saved; more than one after a ramble.
+    var group: [Entry] = []
     var onUndo: () -> Void
+
+    private var isGroup: Bool { group.count > 1 }
+    private var totalCents: Int { isGroup ? group.reduce(0) { $0 + $1.amountCents } : entry.amountCents }
 
     var body: some View {
         HStack(spacing: Theme.Space.m) {
             CategoryBadge(category: entry.category, size: 40)
             VStack(alignment: .leading, spacing: 0) {
-                Text("Saved to \(entry.category.displayName)")
+                Text(isGroup ? "Saved \(group.count) expenses" : "Saved to \(entry.category.displayName)")
                     .font(Theme.caption).foregroundStyle(Theme.inkSoft)
-                Text(Money.format(cents: entry.amountCents))
+                Text(Money.format(cents: totalCents))
                     .font(Theme.display(24)).foregroundStyle(Theme.ink)
             }
             Spacer(minLength: 0)

@@ -20,9 +20,12 @@ struct YapLaterApp: App {
                     }
                     if let sentences = ProcessInfo.processInfo.environment["YAP_TRY"] {
                         // Debug: run "a|b|c" through the active interpreter and print what it proposes.
-                        for sentence in sentences.split(separator: "|").map(String.init) {
+                        for whole in sentences.split(separator: "|").map(String.init) {
+                          let parts = RambleSplitter.pieces(of: whole)
+                          for sentence in (parts.isEmpty ? [whole] : parts) {
                             let result = try? await AppEnvironment.sharedInterpreter.interpret(InterpretationRequest(transcript: sentence))
                             print("YAPTRY \(sentence) => \(result.map { "\($0.kind.rawValue) amount=\($0.amount.map { String($0) } ?? "nil") category=\($0.category ?? "nil")" } ?? "error")")
+                          }
                         }
                         print("YAPTRY-END")
                     }
