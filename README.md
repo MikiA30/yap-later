@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/hero.png" alt="Yap Later on the Mac: the home screen greeting the user by name with this week's total and budgets, the charts page, and the profile page with a name and picture">
+  <img src="docs/images/screens.png" alt="Yap Later on the Mac: the home screen greeting the user by name with this week's total and budgets, the charts page, and the profile page with a name and picture">
 </p>
 
 <p align="center"><sub>The Mac build, showing the demo week described under <a href="#honest-limitations">Honest limitations</a>. The name and picture arrived from the iPhone over Bluetooth.</sub></p>
