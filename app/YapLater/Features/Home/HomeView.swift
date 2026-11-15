@@ -18,6 +18,9 @@ struct HomeView: View {
                     BudgetStrip(statuses: model.budgetStatuses, highlighted: model.lastBudgetSet?.category) {
                         showingBudgets = true
                     }
+                    if !model.upcomingReminders.isEmpty {
+                        UpcomingList(reminders: model.upcomingReminders)
+                    }
                     LedgerList(entries: model.entries, newestID: model.lastSaved?.id) { editing = $0 }
                 }
                 .padding(.top, Theme.Space.s)
@@ -86,6 +89,39 @@ struct HomeView: View {
         }
         .padding(.horizontal, Theme.Space.xl)
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// Reminders this app created that are still ahead.
+struct UpcomingList: View {
+    let reminders: [ReminderDraft]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.m) {
+            Text("Coming up").font(Theme.title).foregroundStyle(Theme.ink)
+                .padding(.horizontal, Theme.Space.xl)
+            ForEach(reminders.prefix(4)) { reminder in
+                HStack(spacing: Theme.Space.m) {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 18, weight: .heavy))
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Theme.brand, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(reminder.title).font(Theme.headline).foregroundStyle(Theme.ink).lineLimit(1)
+                        Text(reminder.whenText()).font(Theme.caption).foregroundStyle(Theme.inkSoft)
+                    }
+                    Spacer(minLength: Theme.Space.s)
+                    if let cents = reminder.amountCents {
+                        Text(Money.format(cents: cents)).font(Theme.display(22)).foregroundStyle(Theme.ink)
+                    }
+                }
+                .padding(Theme.Space.m)
+                .stickerCard()
+                .padding(.horizontal, Theme.Space.l)
+                .accessibilityElement(children: .combine)
+            }
+        }
     }
 }
 

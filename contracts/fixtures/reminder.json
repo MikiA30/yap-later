@@ -1,0 +1,8 @@
+{
+  "kind": "reminder",
+  "amount": null,
+  "merchant": null,
+  "category": null,
+  "date_phrase": null,
+  "period": null
+}

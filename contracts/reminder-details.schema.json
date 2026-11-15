@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Yap Later reminder details v1",
+  "description": "Second model step for kind 'reminder'. The model copies what was said into fields; app code builds the calendar date and asks when it is unclear.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "day",
+    "day_of_month",
+    "month",
+    "hour",
+    "minute",
+    "in_minutes",
+    "amount"
+  ],
+  "properties": {
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "day": {
+      "enum": [
+        "today",
+        "tomorrow",
+        "date",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+        null
+      ]
+    },
+    "day_of_month": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "maximum": 31
+    },
+    "month": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "maximum": 12
+    },
+    "hour": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 23
+    },
+    "minute": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 59
+    },
+    "in_minutes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "amount": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    }
+  }
+}

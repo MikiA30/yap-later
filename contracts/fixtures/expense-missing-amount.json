@@ -1,0 +1,8 @@
+{
+  "kind": "expense",
+  "amount": null,
+  "merchant": null,
+  "category": "coffee",
+  "date_phrase": null,
+  "period": null
+}

@@ -98,7 +98,7 @@ Done when:
 ### [T004] Define the money contracts and fixtures
 Area: domain
 Priority: must-have
-Status: in-progress
+Status: integrated
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T001
@@ -136,7 +136,7 @@ Done when:
 ### [T006] Validate proposals and compute weekly budgets
 Area: domain
 Priority: must-have
-Status: in-progress
+Status: integrated
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T004
@@ -174,7 +174,7 @@ Done when:
 ### [T008] Store entries and budgets locally with undo
 Area: store
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T004
@@ -478,7 +478,7 @@ Done when:
 ### [T024] Bill reminders by voice
 Area: stretch
 Priority: stretch
-Status: queued
+Status: integrated
 Owner/session: unclaimed
 Timebox: after 8:30
 Depends on: T011

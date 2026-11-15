@@ -16,6 +16,8 @@ struct YapDock: View {
                 .padding(.horizontal, Theme.Space.l)
                 .animation(Motion.present, value: model.phase)
                 .animation(Motion.present, value: model.lastSaved)
+                .animation(Motion.present, value: model.pendingReminder)
+                .animation(Motion.present, value: model.savedReminder)
 
             HStack {
                 sideButton(systemImage: typing ? "keyboard.chevron.compact.down" : "keyboard",
@@ -122,7 +124,28 @@ struct YapDock: View {
                 .stickerCard()
                 .transition(bubbleTransition)
             case .idle:
-                if let saved = model.lastSaved {
+                if let draft = model.pendingReminder {
+                    ReminderCard(draft: draft, saving: model.isSavingReminder,
+                                 onSave: { model.confirmReminder() }, onCancel: { model.cancelReminder() })
+                        .transition(bubbleTransition)
+                        .id(draft.id)
+                } else if let saved = model.savedReminder {
+                    HStack(spacing: Theme.Space.m) {
+                        Image(systemName: "bell.badge.fill")
+                            .font(.system(size: 22, weight: .heavy)).foregroundStyle(Theme.brand)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Saved to Reminders").font(Theme.caption).foregroundStyle(Theme.inkSoft)
+                            Text("\(saved.title) · \(saved.whenText())").font(Theme.headline).foregroundStyle(Theme.ink)
+                        }
+                        Spacer(minLength: 0)
+                        Button("Dismiss", systemImage: "xmark") { model.dismissSavedReminder() }
+                            .labelStyle(.iconOnly).font(Theme.caption).foregroundStyle(Theme.inkSoft)
+                    }
+                    .padding(Theme.Space.l)
+                    .stickerCard(edge: Theme.brand)
+                    .transition(bubbleTransition)
+                    .accessibilityElement(children: .combine)
+                } else if let saved = model.lastSaved {
                     SavedToast(entry: saved) { model.undoLast() }
                         .transition(bubbleTransition)
                         .id(saved.id)
@@ -230,6 +253,46 @@ struct Waveform: View {
         }
         .animation(.smooth(duration: 0.12), value: levels)
         .accessibilityHidden(true)
+    }
+}
+
+/// A reminder the app understood, waiting for an explicit Save. Shows exactly what will be created.
+struct ReminderCard: View {
+    let draft: ReminderDraft
+    var saving = false
+    var onSave: () -> Void
+    var onCancel: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.m) {
+            HStack(alignment: .top, spacing: Theme.Space.m) {
+                Image(systemName: "bell.fill")
+                    .font(.system(size: 20, weight: .heavy))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.brand, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("REMINDER").font(Theme.label).kerning(1.2).foregroundStyle(Theme.inkSoft)
+                    Text(draft.title).font(Theme.display(24)).foregroundStyle(Theme.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(draft.whenText() + (draft.amountCents.map { " · \(Money.format(cents: $0))" } ?? ""))
+                        .font(Theme.headline).foregroundStyle(Theme.brand)
+                }
+                Spacer(minLength: 0)
+            }
+            HStack(spacing: Theme.Space.m) {
+                Button("Cancel", action: onCancel)
+                    .buttonStyle(ChunkyButtonStyle(fill: Theme.ink.opacity(0.1), edge: Theme.edge.opacity(0.12),
+                                                   foreground: Theme.ink, radius: 14))
+                Spacer()
+                Button(saving ? "Saving…" : "Save to Reminders", systemImage: "checkmark", action: onSave)
+                    .buttonStyle(ChunkyButtonStyle(radius: 14))
+                    .disabled(saving)
+            }
+        }
+        .padding(Theme.Space.l)
+        .stickerCard(edge: Theme.brand)
+        .accessibilityElement(children: .contain)
     }
 }
 

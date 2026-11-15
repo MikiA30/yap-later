@@ -23,6 +23,8 @@ struct MoneyProposal: Codable, Equatable, Sendable {
     enum Kind: String, Codable, Sendable {
         case expense
         case budgetSet = "budget_set"
+        /// A request to be reminded of something, or a bill that is due.
+        case reminder
         case unsupported
     }
 
@@ -34,8 +36,21 @@ struct MoneyProposal: Codable, Equatable, Sendable {
     var period: String?
     var question: String?
 
+    // Reminder details (only for `.reminder`). The model normalizes words to numbers; app code builds the date.
+    var title: String?
+    /// "today", "tomorrow", a weekday name, or "date" when `dayOfMonth` (and maybe `month`) is given.
+    var day: String?
+    var dayOfMonth: Int?
+    var month: Int?
+    /// 0...23 as said; app code applies morning/evening words and asks when it is unclear.
+    var hour: Int?
+    var minute: Int?
+    var inMinutes: Int?
+
     enum CodingKeys: String, CodingKey {
-        case kind, amount, merchant, category, period, question
+        case kind, amount, merchant, category, period, question, title, day, month, hour, minute
         case datePhrase = "date_phrase"
+        case dayOfMonth = "day_of_month"
+        case inMinutes = "in_minutes"
     }
 }

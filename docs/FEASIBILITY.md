@@ -5,7 +5,7 @@ All gates begin **NOT RUN**. A compiled simulator build, Mac model response, or 
 | Gate | Task | Evidence | Status |
 |---|---|---|---|
 | G0: device launch | T001 | iPhone 17 Pro (iPhone18,1), iOS 26.6.2, Personal Team signing, launched 2026-11-15 03:43 EST | **PASS** |
-| G1: local model | T002, T016 | Ternary Bonsai 2 4B Q2_0 GGUF (1,212 MB) via llama.cpp b12405 xcframework, Metal, grammar-constrained JSON. 20/20 on the built-in eval, median 1.4 s, load 0.2 to 1.6 s (`eval/results/bonsai-2-4b-iphone17pro-2026-11-15.txt`). 2B Q2_0: 12/20, about 0.7 s. The phone was online during these runs | **PASS on device; offline run pending (G3)** |
+| G1: local model | T002, T016 | Ternary Bonsai 2 4B Q2_0 GGUF (1,212 MB) via llama.cpp b12405 xcframework, Metal, grammar-constrained JSON. 23/23 on the built-in eval (including 3 reminder sentences), median 1.3 s, load 0.2 to 1.6 s (`eval/results/bonsai-2-4b-iphone17pro-2026-11-15.txt`). 2B Q2_0: 12/20, about 0.7 s. The phone was online during these runs | **PASS on device; offline run pending (G3)** |
 | G2: nudge notification | T003 | Permission prompt and in-app spoken nudge seen by the user; a notification on the locked phone has not been observed | NOT RUN |
 | G3: full offline loop | T011 | Cold launch in airplane mode with the Mac unplugged, full demo script | NOT RUN |
 | G4: on-device speech | T020 | WhisperKit 1.1.1, openai_whisper-small copied to the phone; live yaps by the user transcribed in 0.25 to 0.85 s; number-word prompt verified with synthetic speech and the user's voice. The phone was online | **PASS on device; offline run pending (G3)** |

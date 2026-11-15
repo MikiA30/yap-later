@@ -1,5 +1,3 @@
-# Proposed model contract
+# Contracts
 
-`reminder-proposal.schema.json` describes a structured model proposal, not a permission to write a reminder. Fixtures are synthetic examples. Their fixed calendar date is intentional and must be evaluated against a fixed test clock; it is not a live reminder to create today.
-
-The schema does not enforce all semantic constraints. T004/T006 must add cross-field checks, calendar validity, time-zone/DST behavior, reference-clock resolution, unsupported-intent checks, and explicit user confirmation. See `docs/CONTRACTS.md`.
+`money-proposal.schema.json` is the JSON the on-device model returns for a spoken sentence; `reminder-details.schema.json` is the second step for reminders. `fixtures/` holds one example of each case. The Swift types are `MoneyProposal` and `ReminderDraft` in `app/YapLater/Domain/`; the grammars that force this shape are in `BonsaiInterpreter.swift`. See `docs/CONTRACTS.md`.

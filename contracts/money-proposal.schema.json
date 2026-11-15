@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Yap Later money proposal v1",
+  "description": "What the on-device model returns for one spoken sentence. Untrusted: app code validates every field before anything is stored. A reminder's details come from a second model step (see docs/CONTRACTS.md).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "amount",
+    "merchant",
+    "category",
+    "date_phrase",
+    "period"
+  ],
+  "properties": {
+    "kind": {
+      "enum": [
+        "expense",
+        "budget_set",
+        "reminder",
+        "unsupported"
+      ]
+    },
+    "amount": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Dollars exactly as said; null when no amount was said."
+    },
+    "merchant": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "category": {
+      "enum": [
+        "groceries",
+        "dining",
+        "coffee",
+        "transport",
+        "shopping",
+        "bills",
+        "fun",
+        "health",
+        "other",
+        null
+      ]
+    },
+    "date_phrase": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The words about when, e.g. 'yesterday'. Resolved in app code."
+    },
+    "period": {
+      "enum": [
+        "week",
+        null
+      ]
+    }
+  }
+}

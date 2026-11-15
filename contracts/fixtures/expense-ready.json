@@ -1,0 +1,8 @@
+{
+  "kind": "expense",
+  "amount": 50,
+  "merchant": "Walmart",
+  "category": "groceries",
+  "date_phrase": null,
+  "period": null
+}

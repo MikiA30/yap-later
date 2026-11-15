@@ -34,7 +34,7 @@ enum InterpreterPrompt {
     /// Small models follow example turns far better than examples buried in the instructions.
     static let chatSystem = """
     You turn one spoken sentence about money into one JSON object. Read the sentence carefully and answer only about that sentence.
-    - "kind": "expense" if the person spent, paid, or bought something (even with no amount). "budget_set" if they set or change a budget. Otherwise "unsupported".
+    - "kind": "expense" if the person spent, paid, or bought something (even with no amount). "budget_set" if they set or change a budget. "reminder" if they ask to be reminded of something, or say a bill or payment is due later. Otherwise "unsupported".
     - "amount": the dollars that were said, as a number. "six fifty" is 6.5, "thirteen forty five" is 13.45, "a hundred and twenty" is 120. null if no amount was said. Never make one up.
     - "merchant": the shop or company name if one was said, otherwise null.
     - "category": one of \(categories). Food shopping is groceries. Lunch, dinner, restaurants are dining. Uber, gas, bus, parking are transport. Clothes, shoes, gadgets are shopping. Rent, electric, phone, internet are bills. Movies, games, concerts are fun. Pharmacy, doctor, gym are health. Otherwise other.
@@ -55,7 +55,9 @@ enum InterpreterPrompt {
         ("Took a Lyft last night, seventeen fifty",
          #"{"kind":"expense","amount":17.5,"merchant":"Lyft","category":"transport","date_phrase":"last night","period":null}"#),
         ("Remind me to water the plants",
-         #"{"kind":"unsupported","amount":null,"merchant":null,"category":null,"date_phrase":null,"period":null}"#),
+         #"{"kind":"reminder","amount":null,"merchant":null,"category":null,"date_phrase":null,"period":null}"#),
+        ("Rent is due on the first, twelve hundred dollars",
+         #"{"kind":"reminder","amount":1200,"merchant":null,"category":"bills","date_phrase":"on the first","period":null}"#),
         ("Got headphones for two hundred at Best Buy",
          #"{"kind":"expense","amount":200,"merchant":"Best Buy","category":"shopping","date_phrase":null,"period":null}"#),
         ("Concert tickets, sixty five bucks",
@@ -68,6 +70,45 @@ enum InterpreterPrompt {
          #"{"kind":"unsupported","amount":null,"merchant":null,"category":null,"date_phrase":null,"period":null}"#),
         ("Paid the internet bill, sixty dollars",
          #"{"kind":"expense","amount":60,"merchant":null,"category":"bills","date_phrase":null,"period":null}"#),
+    ]
+
+    // MARK: Reminders (second step, only when the first step says "reminder")
+
+    static let reminderSystem = """
+    You turn one spoken reminder request into one JSON object. Do not work out calendar dates; just copy what was said into the fields.
+    - "title": the thing to do, short, starting with a verb: "Call mom", "Pay rent", "Pay phone bill". null if nothing was named.
+    - "day": "today", "tomorrow", a weekday name, or "date" when a day of the month was said ("the first", "December third"). "tonight" is "today". null if no day was said.
+    - "day_of_month": the number when "day" is "date", otherwise null.
+    - "month": 1 to 12 if a month was named, otherwise null.
+    - "hour": the hour that was said, 0 to 23. "six pm" is 18, "eight tonight" is 20, "seven thirty in the morning" is 7, "noon" is 12. If no morning or evening was said, use the number as said ("at six" is 6). null if no time was said.
+    - "minute": 0 to 59, 0 when only an hour was said, null if no time was said.
+    - "in_minutes": for "in ten minutes" 10, "in two hours" 120, "in half an hour" 30. Otherwise null.
+    - "amount": dollars if a bill amount was said, otherwise null.
+    """
+
+    static let reminderExamples: [(sentence: String, answer: String)] = [
+        ("Remind me to call mom tomorrow at six pm",
+         #"{"title":"Call mom","day":"tomorrow","day_of_month":null,"month":null,"hour":18,"minute":0,"in_minutes":null,"amount":null}"#),
+        ("Rent is due on the first, twelve hundred dollars",
+         #"{"title":"Pay rent","day":"date","day_of_month":1,"month":null,"hour":null,"minute":null,"in_minutes":null,"amount":1200}"#),
+        ("Remind me in ten minutes to check the oven",
+         #"{"title":"Check the oven","day":null,"day_of_month":null,"month":null,"hour":null,"minute":null,"in_minutes":10,"amount":null}"#),
+        ("Remind me to take out the trash on Thursday at seven thirty in the morning",
+         #"{"title":"Take out the trash","day":"thursday","day_of_month":null,"month":null,"hour":7,"minute":30,"in_minutes":null,"amount":null}"#),
+        ("Remind me to email Professor Lee at six",
+         #"{"title":"Email Professor Lee","day":null,"day_of_month":null,"month":null,"hour":6,"minute":0,"in_minutes":null,"amount":null}"#),
+        ("My phone bill is due December third",
+         #"{"title":"Pay phone bill","day":"date","day_of_month":3,"month":12,"hour":null,"minute":null,"in_minutes":null,"amount":null}"#),
+        ("Remind me to water the plants",
+         #"{"title":"Water the plants","day":null,"day_of_month":null,"month":null,"hour":null,"minute":null,"in_minutes":null,"amount":null}"#),
+        ("Remind me to water the plants. Tomorrow at nine in the morning",
+         #"{"title":"Water the plants","day":"tomorrow","day_of_month":null,"month":null,"hour":9,"minute":0,"in_minutes":null,"amount":null}"#),
+        ("Remind me in two hours to move the car",
+         #"{"title":"Move the car","day":null,"day_of_month":null,"month":null,"hour":null,"minute":null,"in_minutes":120,"amount":null}"#),
+        ("Remind me tonight at eight to study for the exam",
+         #"{"title":"Study for the exam","day":"today","day_of_month":null,"month":null,"hour":20,"minute":0,"in_minutes":null,"amount":null}"#),
+        ("Remind me to email Professor Lee at six. Evening",
+         #"{"title":"Email Professor Lee","day":null,"day_of_month":null,"month":null,"hour":18,"minute":0,"in_minutes":null,"amount":null}"#),
     ]
 
     static func sentenceLine(_ sentence: String) -> String {
@@ -103,6 +144,24 @@ enum ProposalParser {
         let data = Data(json.utf8)
         if let strict = try? JSONSerialization.jsonObject(with: data) { return strict }
         return try JSONSerialization.jsonObject(with: data, options: [.json5Allowed])
+    }
+
+    /// Parses the second-step reminder answer into a `.reminder` proposal.
+    static func parseReminder(_ text: String) throws -> MoneyProposal {
+        guard let json = firstJSONObject(in: text) else { throw ParseError.noJSON }
+        guard let object = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any] else {
+            throw ParseError.notAnObject
+        }
+        func integer(_ key: String) -> Int? { number(object[key]).map { Int($0.rounded()) } }
+        var proposal = MoneyProposal(kind: .reminder, amount: number(object["amount"]))
+        proposal.title = string(object["title"])
+        proposal.day = string(object["day"])?.lowercased()
+        proposal.dayOfMonth = integer("day_of_month")
+        proposal.month = integer("month")
+        proposal.hour = integer("hour")
+        proposal.minute = integer("minute")
+        proposal.inMinutes = integer("in_minutes")
+        return proposal
     }
 
     /// The first balanced `{ ... }` in the text, ignoring braces inside strings.
