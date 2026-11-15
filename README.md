@@ -110,7 +110,7 @@ We wanted an app that feels made by people who care, not a dark screen with a ch
 - **One loud color.** Warm paper and espresso backgrounds, cream ink, and a single orange. Category colors are deliberately quiet.
 - **Reduce Motion is respected everywhere**: movement becomes a crossfade, never a missing state.
 
-The motion rules we wrote for ourselves are in [`.claude/skills/swiftui-motion/SKILL.md`](.claude/skills/swiftui-motion/SKILL.md).
+The design notes are in [`docs/DESIGN.md`](docs/DESIGN.md), and the motion values the whole app shares are in [`Motion.swift`](app/YapLater/DesignSystem/Motion.swift).
 
 ## Right-sized by measurement
 
@@ -179,11 +179,14 @@ Unit tests: `xcodebuild test -project app/YapLater.xcodeproj -scheme YapLater -d
 | [`app/YapLaterTests/`](app/YapLaterTests/) | 49 unit tests for amounts, dates, budgets, the voice loop, sync merging, and the chart numbers |
 | [`docs/PITCH.md`](docs/PITCH.md), [`docs/video-script.pdf`](docs/video-script.pdf) | The 2-minute video script and the clips to record |
 | [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) | What was verified on real devices, and what was not |
-| [`docs/TICKETS.md`](docs/TICKETS.md) | The ticket list the weekend ran on |
-| [`.plans/yap-later-spec.md`](.plans/yap-later-spec.md) | The product spec |
+| [`docs/CONTRACTS.md`](docs/CONTRACTS.md), [`contracts/`](contracts/) | How a sentence becomes stored data, with the JSON shapes the model must return |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | The look and the motion rules |
+| [`eval/`](eval/) | The test sentences and the on-device model report |
 | [`scripts/`](scripts/) | Mac setup, model fetching, demo week, voice switch |
 
 ## Credits
+
+Built by Mikiyas Asmamaw. Released under the [MIT License](LICENSE).
 
 Ternary Bonsai 2 by PrismML. WhisperKit and TTSKit by Argmax. llama.cpp by ggml-org and contributors. Whisper by OpenAI. Qwen3-TTS by Alibaba's Qwen team.
 

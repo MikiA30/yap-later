@@ -1,5 +1,5 @@
 # Evaluation
 
-Use `requests.json` with its fixed reference clock. Assert semantic outcomes, not exact wording. Every inference outcome still requires app validation and confirmation. Add malformed/truncated JSON, duplicate/stale requests, user edits, timeout, permission denial, and failed-save cases at the relevant service boundaries.
+`requests.json` holds synthetic sentences and the outcome the app should reach after validation, with a fixed reference clock so relative dates are repeatable. The check that runs on the device is in `app/YapLater/Services/Inference/InterpreterEval.swift`; launch the app with `YAP_EVAL=1` to run it (see `docs/COMMANDS.md`).
 
-Record extraction success, correct clarification/unsupported handling, cold/warm latency, memory if measurable, and observed reminder/notification outcomes separately. No measurements exist yet. Put synthetic result summaries under `results/` with device/iOS/model/runtime/app revision and the actual network state.
+Results are in [`results/`](results/). Each report names the model file and the time taken per sentence. The sentences are made up; no real spending or reminders are stored here.

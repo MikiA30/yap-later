@@ -1,22 +1,8 @@
 # Commands and verification
 
-## Starter
-
-```sh
-cd <the folder you cloned this repository into>
-python3 scripts/check_setup.py
-claude
-```
-
-Tracker: `gh issue list -R MikiA30/yap-later --milestone "Hackathon submission"`. Publish new tickets: `python3 scripts/create_issues.py`.
-
-Inside Claude: `/interview`, `/kickoff`, `/tickets`, `/skeleton`, `/task T002`, `/task T003`, `/team-status` as appropriate to the current stage.
-
-`claude plugin validate --strict .claude/skills` and `claude plugin validate --strict .claude/commands` check Claude configuration when that CLI is installed.
-
 ## App commands
 
-Project: `app/YapLater.xcodeproj` (hand-written, Xcode 26.6, folders synced from disk: new Swift files under `app/YapLater/` or `app/YapLaterTests/` are picked up automatically). Scheme `YapLater`. Bundle ID `com.mikiyas.yaplater`. Signing: automatic, Personal Team `MWY85H9F24`. Deployment target iOS 26.0, iPhone only.
+Project: `app/YapLater.xcodeproj` (hand-written, Xcode 26.6, folders synced from disk: new Swift files under `app/YapLater/` or `app/YapLaterTests/` are picked up automatically). Scheme `YapLater`. Bundle ID `com.mikiyas.yaplater`. Signing: automatic, with a free Personal Team. Deployment target iOS 26.0, iPhone only.
 
 | Check | Actual command (from `app/`) | Result/evidence |
 |---|---|---|

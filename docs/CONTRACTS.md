@@ -35,4 +35,4 @@ For `reminder`, a second model step returns `contracts/reminder-details.schema.j
 
 ## Change record
 
-- 2026-11-15: v1 for the money pivot; replaces the reminders-only v0. Implemented and exercised on the iPhone 17 Pro; reminders verified by unit tests and the on-device model eval, not yet by a live voice run.
+- 2026-11-15: v1 for the money pivot; replaces the reminders-only v0. Implemented and exercised on the iPhone 17 Pro; reminders verified by unit tests, the on-device model eval, and a spoken reminder on the iPhone (see `docs/FEASIBILITY.md`).
