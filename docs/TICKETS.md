@@ -1,6 +1,6 @@
 # Yap Later tickets
 
-Status as of 2026-11-15 08:30 EST: the kickoff deck arrived (`ideation/EVENT.md`). **Submission closes at noon; it must run on a Mac with Wi-Fi off; video max 2 minutes plus a GitHub link; theme "Recreate".** T026 to T031 cover the gaps. The iPhone loop, reminders, ramble, the airplane-mode run and the locked-phone nudge all work on the device. GitHub issues in `MikiA30/yap-later` mirror these tickets; this file is the source of dependencies and done-when criteria.
+Status as of 2026-11-15 10:15 EST: every ticket is closed except T013, which holds the owner's last steps (record the video, make the repo public, submit before noon). Built and verified: the voice-to-budget loop on iPhone and Mac with the network off, reminders, ramble, Bluetooth sync, the Argmax voice, charts, profile. Cut: location nudges (T025), the on-device accessibility checks (T031), the Action Button confirmation (T019). GitHub issues in `MikiA30/yap-later` mirror these tickets; this file is the source of dependencies and done-when criteria.
 
 **Order.** Device shell → speech and model gates in parallel with pure-Swift domain work → store and UI → integrated voice loop → motion → offline acceptance → judge materials. **Feature freeze 07:15.** Bonsai hard stop **05:15**, then T016 locks the interpreter.
 
@@ -276,7 +276,7 @@ Done when:
 ### [T013] Pre-log the demo week, rehearse, and submit
 Area: demo
 Priority: must-have
-Status: queued
+Status: in-progress (demo week, script, README done; recording, making the repo public, and submitting are the owner's)
 Owner/session: user + Claude
 Timebox: 15 min
 Depends on: T011, T022, T023
@@ -390,7 +390,7 @@ Done when:
 ### [T019] Start a yap from the Action Button
 Area: intents
 Priority: should-have
-Status: review
+Status: cut (shortcut built and merged; never confirmed on the device, by the owner's choice)
 Owner/session: unclaimed
 Timebox: 15 min
 Depends on: T009
@@ -504,7 +504,7 @@ Done when:
 ### [T025] Location nudges near frequent merchants
 Area: stretch
 Priority: stretch
-Status: queued (not built: needs a location permission and a walk-around test that could not be done before the deadline; first in the cut order)
+Status: cut (not built; needs a location permission and a walk-around test)
 Owner/session: unclaimed
 Timebox: after 8:30
 Depends on: T011
@@ -561,7 +561,7 @@ Done when:
 ### [T028] Make the repo ready to share with judges
 Area: submission
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 15 min
 Depends on: T022
@@ -598,7 +598,7 @@ Done when:
 ### [T030] Speak with Argmax text-to-speech instead of the system voice
 Area: speech
 Priority: stretch
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 60 min
 Depends on: T026
@@ -616,7 +616,7 @@ Done when:
 ### [T031] Accessibility pass: VoiceOver labels and large text
 Area: ui
 Priority: optional
-Status: ready
+Status: cut (labels audited in code; VoiceOver and largest-text checks on a device not run)
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T007
