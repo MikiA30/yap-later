@@ -25,3 +25,24 @@ __pycache__/
 node_modules/
 .claude/worktrees/
 app/Vendor/
+
+# Local planning notes and tool configuration; not part of the published project
+CLAUDE.md
+AGENTS.md
+START_HERE.md
+.claude/
+.github/
+.plans/
+prompts/
+ideation/
+spikes/
+docs/TICKETS.md
+docs/PLAN.md
+docs/DEMO.md
+docs/ARCHITECTURE.md
+docs/DECISIONS.md
+docs/SOURCES.md
+docs/PREPARATION.md
+scripts/check_setup.py
+scripts/create_issues.py
+scripts/worktree.sh
