@@ -26,5 +26,6 @@ For a live finalist demo (12:30), use the same order and skip the Mac segment if
 - Airplane mode on, Wi-Fi and Bluetooth off, Mac unplugged.
 - Mac: run `scripts/setup_mac.sh` beforehand, open the app once and allow the microphone, then turn Wi-Fi off before recording the Mac segment.
 - Video is at most 2:00; submit it with the GitHub link before noon.
+- Before recording, check the three things that have not been seen working yet: the Mac microphone (hold the button in the Mac window and allow the prompt), the Argmax voice (listen to one question on the Mac; it is off on the iPhone until checked there), and Sync (tap Sync on the Mac, then on the iPhone, and allow Bluetooth on both). Only show or mention in the video what worked in that check. If Sync works, it fits in the Mac segment: log an expense on the phone, tap Sync on both, and it appears on the Mac.
 - Reminders access already granted (save one reminder before the demo so the permission prompt does not appear live).
 - Backup: screen recording of the same flow made in airplane mode.
