@@ -15,6 +15,7 @@ struct YapLaterApp: App {
             RootView(model: model)
                 #if os(macOS)
                 .frame(width: 430, height: 860) // the phone layout, in a fixed window
+                .buttonStyle(.plain) // no default Mac bezels behind the icon buttons
                 #endif
                 .task {
                     #if DEBUG
@@ -31,6 +32,15 @@ struct YapLaterApp: App {
                           }
                         }
                         print("YAPTRY-END")
+                    }
+                    if let typed = ProcessInfo.processInfo.environment["YAP_SUBMIT"] {
+                        // Debug: send "a|b" through the whole app as typed yaps (this saves real entries).
+                        for sentence in typed.split(separator: "|").map(String.init) {
+                            model.submit(text: sentence)
+                            try? await Task.sleep(for: .seconds(6))
+                            print("YAPSUBMIT \(sentence) => phase \(model.phase), entries \(model.entries.count), total \(model.weekTotalCents)")
+                        }
+                        print("YAPSUBMIT-END")
                     }
                     #if canImport(TTSKit)
                     if let line = ProcessInfo.processInfo.environment["YAP_TTS"] {

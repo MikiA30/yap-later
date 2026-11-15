@@ -74,3 +74,14 @@ struct ReliabilityTests {
         #expect(model.entries.first?.category == .dining)
     }
 }
+
+#if canImport(TTSKit)
+struct SpokenFormTests {
+    @Test func moneyIsWrittenTheWayItIsSaid() {
+        #expect(ArgmaxSpeaker.spokenForm(of: "Only $10 left for Groceries this week.") == "Only 10 dollars left for Groceries this week.")
+        #expect(ArgmaxSpeaker.spokenForm(of: "Coffee budget is $6.50 a week.") == "Coffee budget is 6 dollars and 50 cents a week.")
+        #expect(ArgmaxSpeaker.spokenForm(of: "$1,200 over") == "1200 dollars over")
+        #expect(ArgmaxSpeaker.spokenForm(of: "How much was it?") == "How much was it?")
+    }
+}
+#endif

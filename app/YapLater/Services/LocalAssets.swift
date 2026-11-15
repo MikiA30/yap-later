@@ -11,4 +11,13 @@ enum LocalAssets {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         #endif
     }
+
+    /// What to call this device in the interface: "phone" or "Mac".
+    static var deviceName: String {
+        #if os(macOS)
+        "Mac"
+        #else
+        "phone"
+        #endif
+    }
 }
