@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct YapView: View {
-    @Bindable var model: YapModel
+    @Bindable var model: AppModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -68,44 +68,50 @@ struct YapView: View {
         Group {
             switch model.phase {
             case .idle:
-                if model.lastAddedID != nil {
+                if model.lastSaved != nil {
                     Button("Undo", systemImage: "arrow.uturn.backward") { model.undoLast() }
                         .font(.system(.subheadline, design: .rounded, weight: .bold))
+                } else if let nudge = model.nudge {
+                    Text(nudge.message).foregroundStyle(.orange)
                 } else {
                     Color.clear
                 }
             case .listening:
                 Label("Listening…", systemImage: "waveform")
                     .symbolEffect(.variableColor.iterative, isActive: true)
-            case .thinking(let transcript):
-                Text("“\(transcript)”")
+            case .transcribing, .thinking:
+                Text(model.transcript.isEmpty ? "…" : "“\(model.transcript)”")
                     .multilineTextAlignment(.center)
+            case .asking(let question):
+                Text(question).foregroundStyle(Color.accentColor)
             case .failed(let message):
-                Text(message).foregroundStyle(.red)
+                Text(message).foregroundStyle(.red).multilineTextAlignment(.center)
             }
         }
         .font(.system(.body, design: .rounded, weight: .semibold))
-        .frame(height: 56)
+        .frame(minHeight: 56)
         .padding(.horizontal, 24)
         .animation(Motion.quick, value: model.phase)
     }
 
     private var yapButton: some View {
-        Button {
-            if model.isBusy { model.cancel() } else { model.startYap() }
-        } label: {
-            Image(systemName: model.isBusy ? "xmark" : "mic.fill")
-                .font(.system(size: 34, weight: .heavy))
-                .contentTransition(.symbolEffect(.replace))
-                .foregroundStyle(.white)
-                .frame(width: 96, height: 96)
-                .background(model.isBusy ? Color.gray : Color.accentColor, in: Circle())
-                .shadow(color: .black.opacity(0.18), radius: 0, y: 6)
-        }
-        .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .medium), trigger: model.isBusy)
-        .accessibilityLabel(model.isBusy ? "Cancel" : "Yap")
-        .padding(.bottom, 24)
+        Image(systemName: model.phase == .listening ? "waveform" : "mic.fill")
+            .font(.system(size: 34, weight: .heavy))
+            .contentTransition(.symbolEffect(.replace))
+            .foregroundStyle(.white)
+            .frame(width: 96, height: 96)
+            .background(model.isBusy ? Color.gray : Color.accentColor, in: Circle())
+            .scaleEffect(model.phase == .listening ? 1.12 : 1)
+            .animation(Motion.quick, value: model.phase)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in model.beginYap() }
+                    .onEnded { _ in model.endYap() }
+            )
+            .sensoryFeedback(.impact(weight: .medium), trigger: model.phase == .listening)
+            .accessibilityLabel("Hold to yap")
+            .accessibilityAddTraits(.isButton)
+            .padding(.bottom, 24)
     }
 }
 
@@ -136,5 +142,6 @@ private struct EntryRow: View {
 }
 
 #Preview {
-    YapView(model: YapModel(transcriber: MockTranscriber(), interpreter: MockMoneyInterpreter()))
+    YapView(model: AppModel(transcriber: MockTranscriber(), interpreter: MockMoneyInterpreter(),
+                            store: InMemoryLedgerStore(), speaker: SilentSpeaker()))
 }

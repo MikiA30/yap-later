@@ -7,22 +7,50 @@ protocol MoneyInterpreter: Sendable {
     func interpret(_ request: InterpretationRequest) async throws -> MoneyProposal
 }
 
-/// MOCK: fixed answers for the mock transcriber's script. No model runs.
+/// MOCK: keyword and digit matching so the UI has something to show. No model runs.
 struct MockMoneyInterpreter: MoneyInterpreter {
     let isMock = true
+    var delay: Duration = .milliseconds(500)
 
     func interpret(_ request: InterpretationRequest) async throws -> MoneyProposal {
-        try await Task.sleep(for: .milliseconds(600))
+        try await Task.sleep(for: delay)
         let text = request.transcript.lowercased()
-        if text.contains("groceries") {
-            return MoneyProposal(kind: .expense, amount: 50, merchant: "Walmart", category: "groceries")
+        let amount = Self.amount(in: text)
+        let category = Self.keywords.first { pair in pair.words.contains { text.contains($0) } }?.category
+
+        if text.contains("budget") {
+            return MoneyProposal(kind: .budgetSet, amount: amount, category: category?.rawValue, period: "week")
         }
-        if text.contains("coffee") {
-            return MoneyProposal(kind: .expense, amount: 6.5, merchant: nil, category: "coffee")
+        guard amount != nil || category != nil else {
+            return MoneyProposal(kind: .unsupported, question: nil)
         }
-        if text.contains("uber") {
-            return MoneyProposal(kind: .expense, amount: 22, merchant: "Uber", category: "transport")
+        let merchant = ["walmart": "Walmart", "uber": "Uber", "starbucks": "Starbucks", "target": "Target"]
+            .first { text.contains($0.key) }?.value
+        return MoneyProposal(kind: .expense, amount: amount, merchant: merchant,
+                             category: category?.rawValue,
+                             datePhrase: text.contains("yesterday") ? "yesterday" : nil)
+    }
+
+    private static let keywords: [(category: Category, words: [String])] = [
+        (.groceries, ["grocer", "walmart", "supermarket"]),
+        (.coffee, ["coffee", "starbucks", "latte"]),
+        (.transport, ["uber", "gas", "bus", "train", "lyft"]),
+        (.dining, ["lunch", "dinner", "restaurant", "pizza"]),
+        (.fun, ["fun", "movie", "game", "concert"]),
+        (.shopping, ["shopping", "clothes", "target", "amazon"]),
+        (.bills, ["rent", "bill", "electric"]),
+        (.health, ["pharmacy", "doctor", "gym"]),
+    ]
+
+    private static let words: [(String, Double)] = [
+        ("six fifty", 6.5), ("twenty two", 22), ("fifty", 50), ("forty", 40), ("twenty", 20),
+        ("twelve", 12), ("ten", 10), ("five", 5),
+    ]
+
+    static func amount(in text: String) -> Double? {
+        if let match = text.firstMatch(of: /\$?(\d+(?:\.\d{1,2})?)/), let value = Double(match.1) {
+            return value
         }
-        return MoneyProposal(kind: .unsupported, question: "I didn't catch that. What did you spend?")
+        return words.first { text.contains($0.0) }?.1
     }
 }
