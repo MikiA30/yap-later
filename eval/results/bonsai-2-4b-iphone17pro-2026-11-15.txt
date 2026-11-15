@@ -1,24 +1,27 @@
 YAPLATER-EVAL-BEGIN Bonsai 2 · Ternary-Bonsai-2-4B-Q2_0
 Interpreter eval (BonsaiInterpreter)
-PASS  1. "Just spent like fifty bucks on groceries at Walmart" | expected expense $50.00 groceries @Walmart | got expense $50.00 groceries @Walmart | 3140 ms
-PASS  2. "Spent 12 dollars on lunch" | expected expense $12.00 dining | got expense $12.00 dining | 1130 ms
-PASS  3. "I paid $45.99 for a shirt at Target" | expected expense $45.99 shopping @Target | got expense $45.99 shopping @Target | 1220 ms
-PASS  4. "Coffee was six fifty" | expected expense $6.50 coffee | got expense $6.50 coffee | 1052 ms
-PASS  5. "Dinner at Chipotle was thirteen forty five" | expected expense $13.45 dining @Chipotle | got expense $13.45 dining @Chipotle | 1325 ms
-PASS  6. "Uber home yesterday was twenty two dollars" | expected expense $22.00 transport @Uber yesterday | got expense $22.00 transport @Uber yesterday | 1214 ms
-PASS  7. "Yesterday I spent 30 dollars on movie tickets" | expected expense $30.00 fun yesterday | got expense $30.00 fun yesterday | 1221 ms
-PASS  8. "Paid the electric bill, eighty four dollars" | expected expense $84.00 bills | got expense $84.00 bills | 1373 ms
-PASS  9. "Dropped 15 bucks at the pharmacy" | expected expense $15.00 health | got expense $15.00 health | 1243 ms
-PASS 10. "Spent a hundred and twenty on new shoes" | expected expense $120.00 shopping | got expense $120.00 shopping | 1443 ms
-PASS 11. "Filled up the tank for 40 dollars" | expected expense $40.00 transport | got expense $40.00 transport | 1426 ms
-PASS 12. "Grabbed a coffee" | expected ask-back, nil amount | got ask-back "How much was it?" (expense, amount nil, category coffee) | 1345 ms
-PASS 13. "Bought some groceries at Trader Joe's" | expected ask-back, nil amount | got ask-back "How much was it?" (expense, amount nil, category groceries) | 1677 ms
-PASS 14. "Grabbed a coffee. Six fifty" | expected expense $6.50 coffee | got expense $6.50 coffee | 1513 ms
-PASS 15. "Got lunch with Sam. 18 dollars" | expected expense $18.00 dining | got expense $18.00 dining | 1536 ms
-PASS 16. "Set my coffee budget to 25 a week" | expected budget $25.00 coffee | got budget $25.00 coffee | 1492 ms
-PASS 17. "Set my fun budget to forty a week" | expected budget $40.00 fun | got budget $40.00 fun | 1715 ms
-PASS 18. "Make my groceries budget one hundred fifty dollars a week" | expected budget $150.00 groceries | got budget $150.00 groceries | 1804 ms
-PASS 19. "What's the weather like" | expected unsupported | got unsupported | 1597 ms
-PASS 20. "Remind me to call mom tomorrow" | expected unsupported | got unsupported | 1671 ms
-Passed 20/20. Latency ms: median 1443, min 1052, max 3140, first 3140.
+PASS  1. "Just spent like fifty bucks on groceries at Walmart" | expected expense $50.00 groceries @Walmart | got expense $50.00 groceries @Walmart | 3385 ms
+PASS  2. "Spent 12 dollars on lunch" | expected expense $12.00 dining | got expense $12.00 dining | 1132 ms
+PASS  3. "I paid $45.99 for a shirt at Target" | expected expense $45.99 shopping @Target | got expense $45.99 shopping @Target | 1227 ms
+PASS  4. "Coffee was six fifty" | expected expense $6.50 coffee | got expense $6.50 coffee | 1043 ms
+PASS  5. "Dinner at Chipotle was thirteen forty five" | expected expense $13.45 dining @Chipotle | got expense $13.45 dining @Chipotle | 1300 ms
+PASS  6. "Uber home yesterday was twenty two dollars" | expected expense $22.00 transport @Uber yesterday | got expense $22.00 transport @Uber yesterday | 1175 ms
+PASS  7. "Yesterday I spent 30 dollars on movie tickets" | expected expense $30.00 fun yesterday | got expense $30.00 fun yesterday | 1168 ms
+PASS  8. "Paid the electric bill, eighty four dollars" | expected expense $84.00 bills | got expense $84.00 bills | 1147 ms
+PASS  9. "Dropped 15 bucks at the pharmacy" | expected expense $15.00 health | got expense $15.00 health | 1125 ms
+PASS 10. "Spent a hundred and twenty on new shoes" | expected expense $120.00 shopping | got expense $120.00 shopping | 1170 ms
+PASS 11. "Filled up the tank for 40 dollars" | expected expense $40.00 transport | got expense $40.00 transport | 1166 ms
+PASS 12. "Grabbed a coffee" | expected ask-back, nil amount | got ask-back "How much was it?" (expense, amount nil, category coffee) | 1080 ms
+PASS 13. "Bought some groceries at Trader Joe's" | expected ask-back, nil amount | got ask-back "How much was it?" (expense, amount nil, category groceries) | 1290 ms
+PASS 14. "Grabbed a coffee. Six fifty" | expected expense $6.50 coffee | got expense $6.50 coffee | 1296 ms
+PASS 15. "Got lunch with Sam. 18 dollars" | expected expense $18.00 dining | got expense $18.00 dining | 1383 ms
+PASS 16. "Set my coffee budget to 25 a week" | expected budget $25.00 coffee | got budget $25.00 coffee | 1317 ms
+PASS 17. "Set my fun budget to forty a week" | expected budget $40.00 fun | got budget $40.00 fun | 1418 ms
+PASS 18. "Make my groceries budget one hundred fifty dollars a week" | expected budget $150.00 groceries | got budget $150.00 groceries | 1573 ms
+PASS 19. "What's the weather like" | expected unsupported | got unsupported | 1308 ms
+PASS 20. "Remind me to call mom tomorrow at six pm" | expected reminder | got reminder "Call mom" Tomorrow at 6:00 PM | 6025 ms
+PASS 21. "Remind me in twenty minutes to check the laundry" | expected reminder | got reminder "Check the laundry" Today at 8:19 AM | 3579 ms
+PASS 22. "My electric bill is due on the fifth, ninety dollars" | expected reminder | got reminder "Pay electric bill" Saturday, Dec 5 at 9:00 AM | 3831 ms
+PASS 23. "Tell me a joke" | expected unsupported | got unsupported | 1430 ms
+Passed 23/23. Latency ms: median 1296, min 1043, max 6025, first 3385.
 YAPLATER-EVAL-END

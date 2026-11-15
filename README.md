@@ -13,6 +13,7 @@ Budgeting apps want your bank credentials, and a lot of people won't hand those 
 - **Yap an expense.** "Grabbed lunch at Chipotle, thirteen forty five" becomes $13.45 · Dining · Chipotle.
 - **It asks when it isn't sure.** Say "grabbed a coffee" and it asks, out loud, "How much was it?" Answer by voice and the entry is completed. It never invents an amount.
 - **Weekly budgets by voice.** "Set my coffee budget to twenty five a week."
+- **Reminders by voice.** "Remind me to call mom tomorrow at six pm" shows a card; tapping Save creates an Apple Reminder with an alert.
 - **Nudges.** When an expense pushes a budget low, you see and hear it: "Only $50 left for Groceries this week."
 - **Undo and edit.** Entries save immediately with an Undo, and any entry can be corrected by tapping it.
 - **Action Button.** "Start a Yap" opens the app already listening.
@@ -36,21 +37,21 @@ Budgeting apps want your bank credentials, and a lot of people won't hand those 
 
 | What | Result |
 |---|---|
-| Bonsai 2 4B on a 20-sentence eval (expenses, number words, missing amounts, budgets, off-topic) | 20/20 correct, median 1.4 s per request |
+| Bonsai 2 4B on a 23-sentence eval (expenses, number words, missing amounts, budgets, reminders, off-topic) | 23/23 correct, median 1.3 s per request (reminders 3.6 to 6 s) |
 | Bonsai 2 2B on the same eval | 12/20 correct, about 0.7 s per request; we ship the 4B |
 | Model load (4B) | about 0.3 s warm, 1.2 to 1.6 s cold |
 | WhisperKit transcription of a 2 to 6 s yap | 0.25 to 0.85 s |
 | Live voice test (expense, ask-back answered by voice, budget set by voice, budget reduced by a second expense) | worked |
 
-The eval report is in [`eval/results/`](eval/results/). The eval sentences are synthetic; five of the twenty overlap with example wording, so treat the score as a sanity check, not a benchmark. See [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) for what has and has not been verified, including the airplane-mode run.
+The eval report is in [`eval/results/`](eval/results/). The eval sentences are synthetic; a few of the twenty-three overlap with example wording, so treat the score as a sanity check, not a benchmark. See [`docs/FEASIBILITY.md`](docs/FEASIBILITY.md) for what has and has not been verified, including the airplane-mode run.
 
 ## Honest limitations
 
 - English and US dollars only; one expense per yap.
-- The check that an amount was really said is basic: it confirms a number was spoken, not which one.
+- The app checks that the proposed amount matches a number you said; unusual phrasings of amounts may make it ask again.
 - If no Bonsai file is on the phone, the app falls back to Apple's on-device model, and to a labeled MOCK if neither is available. The header shows which.
 - The spoken voice is iOS's built-in synthesizer.
-- Bill reminders and location nudges are designed but not built.
+- Reminders are saved to Apple Reminders only after you tap Save. Location nudges are designed but not built.
 
 ## Build and run
 
