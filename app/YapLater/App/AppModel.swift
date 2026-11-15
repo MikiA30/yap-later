@@ -218,8 +218,12 @@ final class AppModel {
         let request = InterpretationRequest(transcript: combined, referenceInstant: now())
 
         let proposal: MoneyProposal
+        let started = Date()
         do {
             proposal = try await interpreter.interpret(request)
+            #if DEBUG
+            print("YAP heard: \"\(combined)\" -> \(proposal.kind.rawValue) amount=\(proposal.amount.map { String($0) } ?? "nil") category=\(proposal.category ?? "nil") merchant=\(proposal.merchant ?? "nil") in \(Int(Date().timeIntervalSince(started) * 1000)) ms")
+            #endif
         } catch is CancellationError {
             return
         } catch {

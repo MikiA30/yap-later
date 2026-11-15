@@ -87,9 +87,14 @@ actor WhisperKitTranscriber: SpeechTranscriber {
         let options = DecodingOptions(task: .transcribe, language: "en", temperature: 0,
                                       skipSpecialTokens: true, withoutTimestamps: true)
         do {
+            let started = Date()
             let results = try await kit.transcribe(audioArray: samples, decodeOptions: options)
-            return results.map(\.text).joined(separator: " ")
+            let text = results.map(\.text).joined(separator: " ")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
+            #if DEBUG
+            print("YAP speech: \(String(format: "%.1f", Double(samples.count) / 16_000)) s of audio transcribed in \(Int(Date().timeIntervalSince(started) * 1000)) ms")
+            #endif
+            return text
         } catch {
             throw SpeechError.failed("\(error)")
         }

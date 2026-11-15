@@ -21,22 +21,23 @@ actor BonsaiInterpreter: MoneyInterpreter {
     }
 
     /// A Bonsai model copied onto the phone ahead of time: `Documents/models/*.gguf`.
-    /// With several present, `-bonsai 4B` (or 2B) on the command line picks one; otherwise the smallest wins.
+    /// With several present, `-bonsai 2B` (or `YAP_BONSAI=2B`) picks one; otherwise the largest wins:
+    /// on the iPhone 17 Pro the 4B scored 18/20 against the 2B's 12/20 on the built-in eval.
     static func provisionedModel() -> URL? {
         guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
         let folder = documents.appendingPathComponent("models", isDirectory: true)
         let files = ((try? FileManager.default.contentsOfDirectory(
             at: folder, includingPropertiesForKeys: [.fileSizeKey])) ?? [])
             .filter { $0.pathExtension == "gguf" && !$0.lastPathComponent.contains("mmproj") }
-        if let wanted = UserDefaults.standard.string(forKey: "bonsai"),
+        if let wanted = ProcessInfo.processInfo.environment["YAP_BONSAI"] ?? UserDefaults.standard.string(forKey: "bonsai"),
            let match = files.first(where: { $0.lastPathComponent.contains(wanted) }) {
             return match
         }
-        return files.min { size(of: $0) < size(of: $1) }
+        return files.max { size(of: $0) < size(of: $1) }
     }
 
     private static func size(of url: URL) -> Int {
-        (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? .max
+        (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
     }
 
     /// Loads the model now so the first yap does not wait for it.
@@ -74,7 +75,13 @@ actor BonsaiInterpreter: MoneyInterpreter {
         try ensureLoaded()
         guard let context, let vocab else { throw InterpreterError.generationFailed("The Bonsai model is not loaded.") }
 
-        let prompt = buildPrompt(system: InterpreterPrompt.system, user: InterpreterPrompt.user(for: request))
+        var turns: [(role: String, content: String)] = [("system", InterpreterPrompt.chatSystem)]
+        for example in InterpreterPrompt.chatExamples {
+            turns.append(("user", InterpreterPrompt.sentenceLine(example.sentence)))
+            turns.append(("assistant", example.answer))
+        }
+        turns.append(("user", InterpreterPrompt.sentenceLine(request.transcript)))
+        let prompt = buildPrompt(turns)
         var tokens = tokenize(prompt, vocab: vocab)
         guard !tokens.isEmpty, tokens.count < 1900 else {
             throw InterpreterError.generationFailed("That was too long for the model.")
@@ -112,37 +119,37 @@ actor BonsaiInterpreter: MoneyInterpreter {
             guard llama_decode(context, llama_batch_get_one(&token, 1)) == 0 else { break }
         }
         do {
-            return try ProposalParser.parse(String(decoding: bytes, as: UTF8.self))
+            var proposal = try ProposalParser.parse(String(decoding: bytes, as: UTF8.self))
+            // An amount that was never said must not leave the interpreter.
+            if let amount = proposal.amount,
+               !AmountEvidence.supports(cents: Int((amount * 100).rounded()), in: request.transcript) {
+                proposal.amount = nil
+            }
+            return proposal
         } catch {
             throw InterpreterError.generationFailed("The model's answer was not readable.")
         }
     }
 
     /// Uses the model's own chat template when llama.cpp recognizes it; otherwise ChatML.
-    private func buildPrompt(system: String, user: String) -> String {
-        var prompt = templated(system: system, user: user)
-            ?? "<|im_start|>system\n\(system)<|im_end|>\n<|im_start|>user\n\(user)<|im_end|>\n<|im_start|>assistant\n"
+    private func buildPrompt(_ turns: [(role: String, content: String)]) -> String {
+        var prompt = templated(turns) ?? turns.map { "<|im_start|>\($0.role)\n\($0.content)<|im_end|>\n" }.joined()
+            + "<|im_start|>assistant\n"
         if suppressThinking { prompt += "<think>\n\n</think>\n\n" } // skip the reasoning block; answer directly
         return prompt
     }
 
-    private func templated(system: String, user: String) -> String? {
+    private func templated(_ turns: [(role: String, content: String)]) -> String? {
         guard let model, let template = llama_model_chat_template(model, nil) else { return nil }
-        return "system".withCString { systemRole in
-            system.withCString { systemText in
-                "user".withCString { userRole in
-                    user.withCString { userText -> String? in
-                        let messages = [llama_chat_message(role: systemRole, content: systemText),
-                                        llama_chat_message(role: userRole, content: userText)]
-                        var buffer = [CChar](repeating: 0, count: (system.utf8.count + user.utf8.count) * 2 + 1024)
-                        let written = llama_chat_apply_template(template, messages, messages.count, true,
-                                                                &buffer, Int32(buffer.count))
-                        guard written > 0, Int(written) < buffer.count else { return nil }
-                        return String(decoding: buffer[0..<Int(written)].map { UInt8(bitPattern: $0) }, as: UTF8.self)
-                    }
-                }
-            }
-        }
+        // Keep C strings alive for the duration of the call.
+        let roles = turns.map { strdup($0.role) }
+        let contents = turns.map { strdup($0.content) }
+        defer { (roles + contents).forEach { free($0) } }
+        let messages = zip(roles, contents).map { llama_chat_message(role: UnsafePointer($0), content: UnsafePointer($1)) }
+        var buffer = [CChar](repeating: 0, count: turns.reduce(2048) { $0 + $1.content.utf8.count * 2 + 64 })
+        let written = llama_chat_apply_template(template, messages, messages.count, true, &buffer, Int32(buffer.count))
+        guard written > 0, Int(written) < buffer.count else { return nil }
+        return String(decoding: buffer[0..<Int(written)].map { UInt8(bitPattern: $0) }, as: UTF8.self)
     }
 
     private func tokenize(_ text: String, vocab: OpaquePointer) -> [llama_token] {

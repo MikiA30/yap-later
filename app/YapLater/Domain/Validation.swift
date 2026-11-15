@@ -78,8 +78,9 @@ enum DatePhrase {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: request.timeZoneID) ?? .current
         let now = request.referenceInstant
-        guard let phrase = phrase?.lowercased(), !phrase.isEmpty else { return now }
-        if phrase.contains("yesterday") {
+        // Look in what was actually said too, in case the model left the date words out.
+        let phrase = "\(phrase ?? "") \(request.transcript)".lowercased()
+        if phrase.contains("yesterday") || phrase.contains("last night") {
             return calendar.date(byAdding: .day, value: -1, to: now) ?? now
         }
         return now

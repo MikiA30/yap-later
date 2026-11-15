@@ -2,6 +2,12 @@ import SwiftUI
 
 @main
 struct YapLaterApp: App {
+    init() {
+        #if DEBUG
+        setvbuf(stdout, nil, _IONBF, 0) // show print output immediately when launched from the Mac
+        #endif
+    }
+
     @State private var model = AppEnvironment.makeModel()
 
     var body: some Scene {
@@ -15,7 +21,7 @@ struct YapLaterApp: App {
                     }
                     if UserDefaults.standard.bool(forKey: "eval") || ProcessInfo.processInfo.environment["YAP_EVAL"] != nil {
                         // Score the active on-device model on the built-in utterances and print the report.
-                        let interpreter = AppEnvironment.makeInterpreter()
+                        let interpreter = AppEnvironment.sharedInterpreter
                         print("YAPLATER-EVAL-BEGIN \(interpreter.name)\n" + (await InterpreterEval.run(interpreter)) + "\nYAPLATER-EVAL-END")
                     }
                     #endif
@@ -52,7 +58,7 @@ enum AppEnvironment {
         #else
         let transcriber: any SpeechTranscriber = WhisperKitTranscriber()
         #endif
-        let interpreter = makeInterpreter()
+        let interpreter = sharedInterpreter
         let store: any LedgerStore = (try? SwiftDataLedgerStore()) ?? InMemoryLedgerStore()
         return AppModel(transcriber: transcriber, interpreter: interpreter, store: store,
                         speaker: SystemSpeaker(), notifier: SystemNudgeNotifier())
@@ -60,7 +66,10 @@ enum AppEnvironment {
 
     /// Sponsor model first (Bonsai 2 via llama.cpp, when its file is on the phone), then Apple's on-device
     /// model as a labeled fallback, then the mock (which makes the UI say MOCK).
-    static func makeInterpreter() -> any MoneyInterpreter {
+    /// One interpreter for the whole app, so the model is loaded once.
+    static let sharedInterpreter: any MoneyInterpreter = makeInterpreter()
+
+    private static func makeInterpreter() -> any MoneyInterpreter {
         #if canImport(llama)
         if let url = BonsaiInterpreter.provisionedModel(), !UserDefaults.standard.bool(forKey: "noBonsai") {
             let bonsai = BonsaiInterpreter(modelURL: url)
