@@ -24,6 +24,20 @@ struct MockMoneyInterpreter: MoneyInterpreter {
         let amount = Self.amount(in: text)
         let category = Self.keywords.first { pair in pair.words.contains { text.contains($0) } }?.category
 
+        if text.contains("remind") {
+            // Just enough for tests and previews: "remind me to <title> [tomorrow] [at <n> [pm]] [in <n> minutes]".
+            var proposal = MoneyProposal(kind: .reminder)
+            if let match = text.firstMatch(of: /remind me (?:to )?([a-z ]+?)(?: tomorrow| today| at | in |\.|$)/) {
+                proposal.title = String(match.1).trimmingCharacters(in: .whitespaces)
+            }
+            if text.contains("tomorrow") { proposal.day = "tomorrow" }
+            if let match = text.firstMatch(of: /in (\d+) minutes?/) { proposal.inMinutes = Int(match.1) }
+            if let match = text.firstMatch(of: /at (\d{1,2})/), let hour = Int(match.1) {
+                proposal.hour = hour
+                proposal.minute = 0
+            }
+            return proposal
+        }
         if text.contains("budget") {
             return MoneyProposal(kind: .budgetSet, amount: amount, category: category?.rawValue, period: "week")
         }

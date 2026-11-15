@@ -12,10 +12,9 @@ actor BonsaiInterpreter: MoneyInterpreter {
     private var model: OpaquePointer?
     private var context: OpaquePointer?
     private var vocab: OpaquePointer?
-    /// The fixed start of every prompt (rules and example turns) and the model's memory right after reading
-    /// it. Each request restores this snapshot, so it starts clean and never sees an earlier request.
-    private var prefixTokens: [llama_token] = []
-    private var prefixState: [UInt8] = []
+    /// For each prompt kind: the fixed start of the prompt (rules and example turns) and the model's memory
+    /// right after reading it. Each request restores a snapshot, so it starts clean and never sees an earlier one.
+    private var snapshots: [String: (tokens: [llama_token], state: [UInt8])] = [:]
     private var suppressThinking = false
 
     init(modelURL: URL) {
@@ -75,16 +74,42 @@ actor BonsaiInterpreter: MoneyInterpreter {
     func interpret(_ request: InterpretationRequest) async throws -> MoneyProposal {
         try Task.checkCancellation()
         try ensureLoaded()
-        guard let context, let vocab else { throw InterpreterError.generationFailed("The Bonsai model is not loaded.") }
+        let first = try run(key: "money", system: InterpreterPrompt.chatSystem, examples: InterpreterPrompt.chatExamples,
+                            sentence: request.transcript, grammar: Self.grammar)
+        var proposal: MoneyProposal
+        do {
+            proposal = try ProposalParser.parse(first)
+            if proposal.kind == .reminder {
+                // Second step: pull out what to remind about and when.
+                let second = try run(key: "reminder", system: InterpreterPrompt.reminderSystem,
+                                     examples: InterpreterPrompt.reminderExamples,
+                                     sentence: request.transcript, grammar: Self.reminderGrammar)
+                proposal = try ProposalParser.parseReminder(second)
+            }
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            throw InterpreterError.generationFailed("The model's answer was not readable.")
+        }
+        // An amount that was never said must not leave the interpreter.
+        if let amount = proposal.amount,
+           !AmountEvidence.supports(cents: Int((amount * 100).rounded()), in: request.transcript) {
+            proposal.amount = nil
+        }
+        return proposal
+    }
 
-        var turns: [(role: String, content: String)] = [("system", InterpreterPrompt.chatSystem)]
-        for example in InterpreterPrompt.chatExamples {
+    /// One constrained generation: rules + example turns + the sentence in, one JSON object out.
+    private func run(key: String, system: String, examples: [(sentence: String, answer: String)],
+                     sentence: String, grammar: String) throws -> String {
+        guard let context, let vocab else { throw InterpreterError.generationFailed("The Bonsai model is not loaded.") }
+        var turns: [(role: String, content: String)] = [("system", system)]
+        for example in examples {
             turns.append(("user", InterpreterPrompt.sentenceLine(example.sentence)))
             turns.append(("assistant", example.answer))
         }
-        turns.append(("user", InterpreterPrompt.sentenceLine(request.transcript)))
-        let prompt = buildPrompt(turns)
-        var tokens = tokenize(prompt, vocab: vocab)
+        turns.append(("user", InterpreterPrompt.sentenceLine(sentence)))
+        var tokens = tokenize(buildPrompt(turns), vocab: vocab)
         guard !tokens.isEmpty, tokens.count < 1900 else {
             throw InterpreterError.generationFailed("That was too long for the model.")
         }
@@ -93,11 +118,15 @@ actor BonsaiInterpreter: MoneyInterpreter {
         // or read the whole prompt if there is no usable snapshot.
         let memory = llama_get_memory(context)
         llama_memory_clear(memory, true)
+        if snapshots[key] == nil {
+            snapshotPrefix(key: key, of: turns, context: context, vocab: vocab)
+            llama_memory_clear(memory, true)
+        }
         var start = 0
-        if prefixTokens.isEmpty { snapshotPrefix(of: turns, context: context, vocab: vocab) ; llama_memory_clear(memory, true) }
-        if !prefixState.isEmpty, tokens.count > prefixTokens.count, Array(tokens[0..<prefixTokens.count]) == prefixTokens,
-           llama_state_seq_set_data(context, prefixState, prefixState.count, 0) > 0 {
-            start = prefixTokens.count
+        if let snapshot = snapshots[key], tokens.count > snapshot.tokens.count,
+           Array(tokens[0..<snapshot.tokens.count]) == snapshot.tokens,
+           llama_state_seq_set_data(context, snapshot.state, snapshot.state.count, 0) > 0 {
+            start = snapshot.tokens.count
         } else {
             llama_memory_clear(memory, true)
         }
@@ -110,12 +139,12 @@ actor BonsaiInterpreter: MoneyInterpreter {
 
         let sampler = llama_sampler_chain_init(llama_sampler_chain_default_params())
         defer { llama_sampler_free(sampler) }
-        llama_sampler_chain_add(sampler, llama_sampler_init_grammar(vocab, Self.grammar, "root"))
+        llama_sampler_chain_add(sampler, llama_sampler_init_grammar(vocab, grammar, "root"))
         llama_sampler_chain_add(sampler, llama_sampler_init_greedy())
 
         var bytes: [UInt8] = []
         var piece = [CChar](repeating: 0, count: 128)
-        for _ in 0..<120 {
+        for _ in 0..<140 {
             try Task.checkCancellation()
             var token = llama_sampler_sample(sampler, context, -1)
             if llama_vocab_is_eog(vocab, token) { break }
@@ -125,21 +154,11 @@ actor BonsaiInterpreter: MoneyInterpreter {
                ProposalParser.firstJSONObject(in: String(decoding: bytes, as: UTF8.self)) != nil { break }
             guard llama_decode(context, llama_batch_get_one(&token, 1)) == 0 else { break }
         }
-        do {
-            var proposal = try ProposalParser.parse(String(decoding: bytes, as: UTF8.self))
-            // An amount that was never said must not leave the interpreter.
-            if let amount = proposal.amount,
-               !AmountEvidence.supports(cents: Int((amount * 100).rounded()), in: request.transcript) {
-                proposal.amount = nil
-            }
-            return proposal
-        } catch {
-            throw InterpreterError.generationFailed("The model's answer was not readable.")
-        }
+        return String(decoding: bytes, as: UTF8.self)
     }
 
     /// Reads the part of the prompt that never changes and keeps a copy of the model's memory after it.
-    private func snapshotPrefix(of turns: [(role: String, content: String)], context: OpaquePointer, vocab: OpaquePointer) {
+    private func snapshotPrefix(key: String, of turns: [(role: String, content: String)], context: OpaquePointer, vocab: OpaquePointer) {
         // Two prompts that differ only in the final sentence share exactly the fixed prefix.
         var probe = turns
         probe[probe.count - 1].content = InterpreterPrompt.sentenceLine("Zq")
@@ -157,9 +176,8 @@ actor BonsaiInterpreter: MoneyInterpreter {
         guard size > 0 else { return }
         var state = [UInt8](repeating: 0, count: size)
         guard llama_state_seq_get_data(context, &state, size, 0) == size else { return }
-        prefixTokens = prefix
-        prefixState = state
-        print("BONSAI prefix snapshot: \(prefix.count) tokens, \(size / 1_048_576) MB")
+        snapshots[key] = (prefix, state)
+        print("BONSAI \(key) prefix snapshot: \(prefix.count) tokens, \(size / 1_048_576) MB")
     }
 
     /// Uses the model's own chat template when llama.cpp recognizes it; otherwise ChatML.
@@ -193,11 +211,20 @@ actor BonsaiInterpreter: MoneyInterpreter {
     /// The only shape the model may produce: one JSON object matching `MoneyProposal`.
     static let grammar = #"""
     root ::= "{\"kind\":" kind ",\"amount\":" amount ",\"merchant\":" text ",\"category\":" category ",\"date_phrase\":" text ",\"period\":" period "}"
-    kind ::= "\"expense\"" | "\"budget_set\"" | "\"unsupported\""
+    kind ::= "\"expense\"" | "\"budget_set\"" | "\"reminder\"" | "\"unsupported\""
     amount ::= "null" | [0-9] [0-9]? [0-9]? [0-9]? [0-9]? [0-9]? ("." [0-9] [0-9]?)?
     text ::= "null" | "\"" [^"\\\n] [^"\\\n]* "\""
     category ::= "null" | "\"groceries\"" | "\"dining\"" | "\"coffee\"" | "\"transport\"" | "\"shopping\"" | "\"bills\"" | "\"fun\"" | "\"health\"" | "\"other\""
     period ::= "null" | "\"week\""
+    """#
+
+    /// The shape of the second-step reminder answer.
+    static let reminderGrammar = #"""
+    root ::= "{\"title\":" text ",\"day\":" day ",\"day_of_month\":" num ",\"month\":" num ",\"hour\":" num ",\"minute\":" num ",\"in_minutes\":" num ",\"amount\":" amount "}"
+    text ::= "null" | "\"" [^"\\\n] [^"\\\n]* "\""
+    day ::= "null" | "\"today\"" | "\"tomorrow\"" | "\"date\"" | "\"monday\"" | "\"tuesday\"" | "\"wednesday\"" | "\"thursday\"" | "\"friday\"" | "\"saturday\"" | "\"sunday\""
+    num ::= "null" | [0-9] [0-9]? [0-9]? [0-9]? [0-9]?
+    amount ::= "null" | [0-9] [0-9]? [0-9]? [0-9]? [0-9]? [0-9]? ("." [0-9] [0-9]?)?
     """#
 }
 #endif

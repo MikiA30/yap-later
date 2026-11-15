@@ -72,7 +72,8 @@ enum AppEnvironment {
         let interpreter = sharedInterpreter
         let store: any LedgerStore = (try? SwiftDataLedgerStore()) ?? InMemoryLedgerStore()
         return AppModel(transcriber: transcriber, interpreter: interpreter, store: store,
-                        speaker: SystemSpeaker(), notifier: SystemNudgeNotifier())
+                        speaker: SystemSpeaker(), notifier: SystemNudgeNotifier(),
+                        reminders: EventKitReminderSaver(), reminderLog: ReminderLog())
     }
 
     /// Sponsor model first (Bonsai 2 via llama.cpp, when its file is on the phone), then Apple's on-device

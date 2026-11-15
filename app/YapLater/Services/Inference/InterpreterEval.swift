@@ -9,6 +9,8 @@ enum InterpreterEval {
         case budget(cents: Int, category: Category)
         /// An expense with no amount said: the proposal's amount must be nil and the app must ask.
         case missingAmount
+        /// A reminder request: recognized as one (a draft, or a question about its time).
+        case reminder
         case unsupported
     }
 
@@ -47,7 +49,10 @@ enum InterpreterEval {
         Case(utterance: "Make my groceries budget one hundred fifty dollars a week",
              expected: .budget(cents: 15000, category: .groceries)),
         Case(utterance: "What's the weather like", expected: .unsupported),
-        Case(utterance: "Remind me to call mom tomorrow", expected: .unsupported),
+        Case(utterance: "Remind me to call mom tomorrow at six pm", expected: .reminder),
+        Case(utterance: "Remind me in twenty minutes to check the laundry", expected: .reminder),
+        Case(utterance: "My electric bill is due on the fifth, ninety dollars", expected: .reminder),
+        Case(utterance: "Tell me a joke", expected: .unsupported),
     ]
 
     struct CaseResult {
@@ -109,6 +114,10 @@ enum InterpreterEval {
             return budget.weeklyLimitCents == cents && budget.category == category
         case (.missingAmount, .askBack):
             return proposal.kind == .expense && proposal.amount == nil
+        case (.reminder, .reminder):
+            return true
+        case (.reminder, .askBack):
+            return proposal.kind == .reminder
         case (.unsupported, .unsupported):
             return true
         default:
@@ -133,6 +142,7 @@ enum InterpreterEval {
         case .expense(let cents, let category): text = "expense \(dollars(cents)) \(category.rawValue)"
         case .budget(let cents, let category): text = "budget \(dollars(cents)) \(category.rawValue)"
         case .missingAmount: text = "ask-back, nil amount"
+        case .reminder: text = "reminder"
         case .unsupported: text = "unsupported"
         }
         if let merchant = testCase.merchant { text += " @\(merchant)" }
@@ -150,6 +160,8 @@ enum InterpreterEval {
             return text
         case .budgetSet(let budget):
             return "budget \(dollars(budget.weeklyLimitCents)) \(budget.category.rawValue)"
+        case .reminder(let draft):
+            return "reminder \"\(draft.title)\" \(draft.whenText())"
         case .askBack(let question):
             let amount = proposal.amount.map { String($0) } ?? "nil"
             return "ask-back \"\(question)\" (\(proposal.kind.rawValue), amount \(amount), "

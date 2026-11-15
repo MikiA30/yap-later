@@ -36,6 +36,13 @@ final class AppModel {
     private(set) var nudge: Nudge?
     /// Set briefly when a budget was just created or changed by voice.
     private(set) var lastBudgetSet: Budget?
+    /// A reminder waiting for the user's Save or Cancel. Nothing is written until Save.
+    private(set) var pendingReminder: ReminderDraft?
+    /// Set after a reminder was saved, for the confirmation toast.
+    private(set) var savedReminder: ReminderDraft?
+    /// Reminders this app created that are still ahead, soonest first.
+    private(set) var upcomingReminders: [ReminderDraft] = []
+    private(set) var isSavingReminder = false
     /// True when speech or interpretation is a stand-in. Views must show this.
     let usesMocks: Bool
     /// Which model interprets yaps, for display: the sponsor model, the fallback, or the mock.
@@ -57,6 +64,8 @@ final class AppModel {
     private let store: any LedgerStore
     private let speaker: any Speaker
     private let notifier: any NudgeNotifier
+    private let reminders: any ReminderSaving
+    private let reminderLog: ReminderLog
     private let now: @Sendable () -> Date
     private let undoWindow: Duration
 
@@ -77,6 +86,8 @@ final class AppModel {
          store: any LedgerStore,
          speaker: any Speaker,
          notifier: any NudgeNotifier = NoopNudgeNotifier(),
+         reminders: (any ReminderSaving)? = nil,
+         reminderLog: ReminderLog? = nil,
          undoWindow: Duration = .seconds(6),
          now: @escaping @Sendable () -> Date = { .now }) {
         self.transcriber = transcriber
@@ -85,6 +96,8 @@ final class AppModel {
         self.store = store
         self.speaker = speaker
         self.notifier = notifier
+        self.reminders = reminders ?? RecordingReminderSaver()
+        self.reminderLog = reminderLog ?? ReminderLog(defaults: nil)
         self.undoWindow = undoWindow
         self.now = now
         self.usesMocks = transcriber.isMock || interpreter.isMock
@@ -105,6 +118,8 @@ final class AppModel {
         guard !isBusy else { return }
         speaker.stop()
         generation += 1
+        pendingReminder = nil // a new yap replaces an unconfirmed reminder
+        savedReminder = nil
         let mine = generation
         phase = .listening
         audioLevel = 0
@@ -198,6 +213,37 @@ final class AppModel {
 
     func dismissNudge() { nudge = nil }
 
+    /// The user tapped Save on the reminder card: write it to Apple Reminders, once.
+    func confirmReminder() {
+        guard let draft = pendingReminder, !isSavingReminder else { return }
+        isSavingReminder = true
+        Task { [weak self, reminders] in
+            do {
+                _ = try await reminders.save(draft)
+                guard let self else { return }
+                self.reminderLog.add(draft)
+                self.pendingReminder = nil
+                self.savedReminder = draft
+                self.refresh()
+                self.speaker.speak("Saved. I'll remind you \(draft.whenText(now: self.now()).lowercased()).")
+            } catch {
+                guard let self else { return }
+                self.phase = .failed(message: error as? ReminderError == .permissionDenied
+                    ? "Yap Later needs access to Reminders. Turn it on in Settings."
+                    : "That reminder didn't save. Try again.")
+            }
+            self?.isSavingReminder = false
+        }
+    }
+
+    func cancelReminder() {
+        guard !isSavingReminder else { return }
+        pendingReminder = nil
+        speaker.stop()
+    }
+
+    func dismissSavedReminder() { savedReminder = nil }
+
     func dismissFailure() {
         if case .failed = phase { phase = .idle }
     }
@@ -260,6 +306,13 @@ final class AppModel {
             phase = .idle
             speaker.speak("Done. \(budget.category.displayName) budget is \(Money.format(cents: budget.weeklyLimitCents)) a week.")
 
+        case .reminder(let draft):
+            resetConversation()
+            savedReminder = nil
+            pendingReminder = draft
+            phase = .idle
+            speaker.speak("\(draft.title), \(draft.whenText(now: now()).lowercased()). Save it?")
+
         case .askBack(let question):
             askCount += 1
             guard askCount <= Self.maxAsks else {
@@ -288,6 +341,7 @@ final class AppModel {
         let week = BudgetMath.weekInterval(containing: now())
         entries = (try? store.entries(in: week)) ?? []
         budgetStatuses = BudgetMath.statuses(entries: entries, budgets: (try? store.budgets()) ?? [])
+        upcomingReminders = reminderLog.upcoming(after: now())
     }
 
     private func raiseNudgeIfNeeded(before: [BudgetStatus], category: Category) {

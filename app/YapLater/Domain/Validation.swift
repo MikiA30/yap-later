@@ -4,6 +4,8 @@ import Foundation
 enum ValidationOutcome: Equatable, Sendable {
     case expense(Entry)
     case budgetSet(Budget)
+    /// A reminder to show for confirmation. Not saved until the user taps Save.
+    case reminder(ReminderDraft)
     /// Something essential is missing; ask the user this short question (spoken) and wait for the answer.
     case askBack(question: String)
     case unsupported(message: String)
@@ -19,9 +21,12 @@ struct ProposalValidator: ProposalValidating {
 
     func validate(_ proposal: MoneyProposal, request: InterpretationRequest) -> ValidationOutcome {
         switch proposal.kind {
+        case .reminder:
+            return ReminderResolver.resolve(proposal, request: request)
+
         case .unsupported:
             return .unsupported(message: proposal.question
-                ?? "I can log spending and set weekly budgets. Try “spent 12 dollars on lunch”.")
+                ?? "I can log spending, set weekly budgets, and set reminders. Try “spent 12 dollars on lunch”.")
 
         case .expense:
             guard let cents = Self.cents(proposal.amount),
