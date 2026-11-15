@@ -4,7 +4,13 @@ import Foundation
 protocol MoneyInterpreter: Sendable {
     /// `true` when this is a stand-in, so the UI can label it.
     var isMock: Bool { get }
+    /// Short label for the UI and reports, e.g. "Bonsai 2 · …".
+    var name: String { get }
     func interpret(_ request: InterpretationRequest) async throws -> MoneyProposal
+}
+
+extension MoneyInterpreter {
+    var name: String { isMock ? "Mock" : String(describing: Self.self) }
 }
 
 /// MOCK: keyword and digit matching so the UI has something to show. No model runs.

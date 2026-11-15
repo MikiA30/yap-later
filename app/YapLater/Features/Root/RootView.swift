@@ -5,6 +5,6 @@ struct RootView: View {
     @Bindable var model: AppModel
 
     var body: some View {
-        YapView(model: model)
+        HomeView(model: model)
     }
 }

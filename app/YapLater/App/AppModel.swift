@@ -38,6 +38,8 @@ final class AppModel {
     private(set) var lastBudgetSet: Budget?
     /// True when speech or interpretation is a stand-in. Views must show this.
     let usesMocks: Bool
+    /// Which model interprets yaps, for display: the sponsor model, the fallback, or the mock.
+    let interpreterName: String
 
     var weekTotalCents: Int { entries.reduce(0) { $0 + $1.amountCents } }
     var isBusy: Bool {
@@ -86,6 +88,7 @@ final class AppModel {
         self.undoWindow = undoWindow
         self.now = now
         self.usesMocks = transcriber.isMock || interpreter.isMock
+        self.interpreterName = interpreter.name
         refresh()
     }
 
@@ -211,12 +214,18 @@ final class AppModel {
         }
         transcript = text
         phase = .thinking
-        let combined = pendingContext.map { "\($0). \(text)" } ?? text
+        let combined = pendingContext.map {
+            "\($0.trimmingCharacters(in: .punctuationCharacters.union(.whitespaces))). \(text)"
+        } ?? text
         let request = InterpretationRequest(transcript: combined, referenceInstant: now())
 
         let proposal: MoneyProposal
+        let started = Date()
         do {
             proposal = try await interpreter.interpret(request)
+            #if DEBUG
+            print("YAP heard: \"\(combined)\" -> \(proposal.kind.rawValue) amount=\(proposal.amount.map { String($0) } ?? "nil") category=\(proposal.category ?? "nil") merchant=\(proposal.merchant ?? "nil") in \(Int(Date().timeIntervalSince(started) * 1000)) ms")
+            #endif
         } catch is CancellationError {
             return
         } catch {
