@@ -6,6 +6,9 @@ struct HomeView: View {
     @State private var editing: Entry?
     @State private var showingBudgets = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The opening moment plays once per launch: bubbles rise, then the greeting settles in.
+    @State private var showingBubbles = true
+    @State private var greeted = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -20,6 +23,9 @@ struct HomeView: View {
                             .foregroundStyle(Theme.inkSoft)
                             .padding(.horizontal, Theme.Space.xl)
                             .transition(.opacity)
+                    }
+                    if greeted {
+                        greeting.transition(reduceMotion ? AnyTransition.opacity : AnyTransition(.blurReplace))
                     }
                     hero
                     BudgetStrip(statuses: model.budgetStatuses, highlighted: model.lastBudgetSet?.category) {
@@ -36,6 +42,14 @@ struct HomeView: View {
             .scrollIndicators(.hidden)
 
             YapDock(model: model)
+
+            if showingBubbles, !reduceMotion {
+                LaunchBubbles { showingBubbles = false }
+            }
+        }
+        .onAppear {
+            guard !greeted else { return }
+            withAnimation(Motion.present.delay(reduceMotion ? 0 : 0.35)) { greeted = true }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
             // Pinned above the content, which slides down to make room: the total stays visible.
@@ -88,19 +102,33 @@ struct HomeView: View {
                 .font(Theme.label)
                 .kerning(1.2)
                 .foregroundStyle(Theme.inkSoft)
-            Text(Money.format(cents: model.weekTotalCents))
-                .font(Theme.display(68))
-                .foregroundStyle(Theme.ink)
-                .contentTransition(.numericText(value: Double(model.weekTotalCents)))
-                .animation(Motion.move, value: model.weekTotalCents)
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
+            SpinningTotal(cents: model.weekTotalCents)
             Text(model.entries.isEmpty ? "nothing spent yet" : "spent across ^[\(model.entries.count) yap](inflect: true)")
                 .font(Theme.body)
                 .foregroundStyle(Theme.inkSoft)
         }
         .padding(.horizontal, Theme.Space.xl)
+    }
+
+    private var greeting: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Hello.")
+                .font(Theme.display(40))
+                .foregroundStyle(Theme.ink)
+            Text("\(Self.partOfDay()). Here's your week.")
+                .font(Theme.body)
+                .foregroundStyle(Theme.inkSoft)
+        }
+        .padding(.horizontal, Theme.Space.xl)
         .accessibilityElement(children: .combine)
+    }
+
+    static func partOfDay(at date: Date = .now, calendar: Calendar = .current) -> String {
+        switch calendar.component(.hour, from: date) {
+        case 5..<12: "Good morning"
+        case 12..<17: "Good afternoon"
+        default: "Good evening"
+        }
     }
 }
 
