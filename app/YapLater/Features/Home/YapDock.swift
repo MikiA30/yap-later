@@ -2,6 +2,15 @@ import SwiftUI
 
 /// The bottom of the screen: what the app is hearing or saying, and the hold-to-talk button.
 struct YapDock: View {
+    /// Where a denied permission can be changed.
+    private static var settingsURL: URL? {
+        #if os(iOS)
+        URL(string: UIApplication.openSettingsURLString)
+        #else
+        URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy")
+        #endif
+    }
+
     @Bindable var model: AppModel
     @State private var levels: [Float] = Array(repeating: 0, count: 30)
     @State private var typing = false
@@ -115,8 +124,7 @@ struct YapDock: View {
                         .foregroundStyle(Theme.danger)
                     VStack(alignment: .leading, spacing: Theme.Space.s) {
                         Text(message).font(Theme.body).foregroundStyle(Theme.ink)
-                        if message.contains("in Settings"),
-                           let settings = URL(string: UIApplication.openSettingsURLString) {
+                        if message.contains("in Settings"), let settings = Self.settingsURL {
                             // A denied permission can only be changed in Settings; take the user straight there.
                             Link(destination: settings) {
                                 Label("Open Settings", systemImage: "gear")

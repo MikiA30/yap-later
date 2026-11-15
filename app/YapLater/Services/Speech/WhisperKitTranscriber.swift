@@ -25,7 +25,7 @@ actor WhisperKitTranscriber: SpeechTranscriber {
 
     /// `Documents/speech/<model>` when the model was copied onto the phone ahead of time.
     static func provisionedFolder(named name: String) -> URL? {
-        guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        guard let documents = LocalAssets.root else { return nil }
         let folder = documents.appendingPathComponent("speech/\(name)", isDirectory: true)
         let encoder = folder.appendingPathComponent("AudioEncoder.mlmodelc")
         return FileManager.default.fileExists(atPath: encoder.path) ? folder : nil

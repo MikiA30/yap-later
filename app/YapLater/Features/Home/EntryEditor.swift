@@ -21,7 +21,9 @@ struct EntryEditor: View {
                     TextField("0", text: $amountText)
                         .font(Theme.display(56))
                         .foregroundStyle(Theme.ink)
+                        #if os(iOS)
                         .keyboardType(.decimalPad)
+                        #endif
                         .accessibilityLabel("Amount in dollars")
                 }
 

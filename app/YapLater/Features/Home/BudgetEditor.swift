@@ -22,7 +22,9 @@ struct BudgetEditor: View {
                             TextField("—", text: Binding(get: { amounts[category] ?? "" },
                                                          set: { amounts[category] = $0.filter(\.isNumber) }))
                                 .font(Theme.display(22))
+                                #if os(iOS)
                                 .keyboardType(.numberPad)
+                                #endif
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 84)
                                 .accessibilityLabel("\(category.displayName) weekly budget in dollars")
@@ -35,7 +37,9 @@ struct BudgetEditor: View {
             }
             .background(Theme.paper)
             .navigationTitle("Weekly budgets")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {

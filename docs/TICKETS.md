@@ -522,7 +522,7 @@ Done when:
 ### [T026] Run on a Mac with Wi-Fi turned off
 Area: foundation
 Priority: must-have
-Status: ready
+Status: review
 Owner/session: unclaimed
 Timebox: 60 min
 Depends on: T009

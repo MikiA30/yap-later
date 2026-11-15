@@ -1,6 +1,6 @@
 # Yap Later
 
-**Talk to your money, privately.** Yap Later is a voice-first expense tracker that runs entirely on your iPhone. Hold a button and say "just spent fifty bucks on groceries at Walmart": it logs the expense, picks the category, counts it against your weekly budget, and warns you out loud when a budget is running low. No bank login, no account, no cloud.
+**Talk to your money, privately.** Yap Later is a voice-first expense tracker that runs entirely on your iPhone or your Mac, with Wi-Fi off. Hold a button and say "just spent fifty bucks on groceries at Walmart": it logs the expense, picks the category, counts it against your weekly budget, and warns you out loud when a budget is running low. No bank login, no account, no cloud.
 
 Built for Cornell's local AI hackathon, November 2026.
 
@@ -56,6 +56,17 @@ The eval report is in [`eval/results/`](eval/results/). The eval sentences are s
 - Reminders are saved to Apple Reminders only after you tap Save. Location nudges are designed but not built.
 
 ## Build and run
+
+### On a Mac (Apple Silicon, macOS 26, Xcode 26.6)
+
+```sh
+scripts/setup_mac.sh        # fetches llama.cpp, downloads Bonsai 2 4B and Whisper small once, builds the app
+open build/mac/Build/Products/Debug/YapLater.app
+```
+
+Then turn Wi-Fi off and hold the orange button to talk (or use the keyboard button to type). The Mac build is the same app and code as the iPhone build, signed to run locally, so no Apple developer account is needed. Models are stored in `~/Library/Application Support/YapLater`. On this project's Mac (M-series, 24 GB) Bonsai 2 4B scored 23/23 on the built-in eval at a median 0.56 s per request, and WhisperKit transcribed the synthetic speech test correctly. The script's download step was verified only by checking that the URLs respond; the models on that Mac were copied from a local download.
+
+### On an iPhone
 
 Requirements: Xcode 26.6, an iPhone on iOS 26, about 2 GB free on the phone.
 
