@@ -33,6 +33,18 @@ struct YapLaterApp: App {
                         }
                         print("YAPTRY-END")
                     }
+                    if ProcessInfo.processInfo.environment["YAP_SYNC"] != nil {
+                        // Debug: start a sync as if the user tapped Sync, and print what it reports.
+                        model.startSync()
+                        var last = ""
+                        for _ in 0..<120 {
+                            try? await Task.sleep(for: .milliseconds(500))
+                            let now = model.syncStatus ?? "(idle)"
+                            if now != last { print("YAPSYNC \(now) | entries \(model.entries.count)"); last = now }
+                            if !model.isSyncing { break }
+                        }
+                        print("YAPSYNC-END")
+                    }
                     if let typed = ProcessInfo.processInfo.environment["YAP_SUBMIT"] {
                         // Debug: send "a|b" through the whole app as typed yaps (this saves real entries).
                         for sentence in typed.split(separator: "|").map(String.init) {
