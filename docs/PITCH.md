@@ -22,7 +22,7 @@ For a live finalist demo (12:30), use the same order and skip the Mac segment if
 
 - Phone charged, Auto-Lock off, volume up, Do Not Disturb off.
 - App opened once after the last install so the speech model is warm (first load after an install can take a minute).
-- Budgets set and the week pre-logged through the app so the live grocery yap crosses the "low" line (25% of the limit, or $50 for limits over $200). Example: Groceries budget $200 with $100 already logged; the live $50 leaves exactly $50.
+- Demo week loaded (`scripts/demo_week.sh iphone replace`, already done on the iPhone and the Mac at 09:38): Groceries stands at $100 of $200, so the live $50 grocery yap leaves exactly $50 and raises the nudge; Coffee stands at $15.25 of $25, so the live $6.50 coffee leaves $3.25 and raises a second one. If asked, call it what it is: a demo week. `scripts/demo_week.sh iphone restore` puts your own earlier entries back.
 - Airplane mode on, Wi-Fi and Bluetooth off, Mac unplugged.
 - Mac: run `scripts/setup_mac.sh` beforehand, open the app once and allow the microphone, then turn Wi-Fi off before recording the Mac segment.
 - Video is at most 2:00; submit it with the GitHub link before noon.

@@ -325,6 +325,64 @@ final class AppModel {
         }
     }
 
+    #if DEBUG
+    // MARK: Demo week (debug builds only)
+
+    /// Where the ledger is saved before the demo week replaces it.
+    private static var demoBackupFile: URL? { LocalAssets.root?.appendingPathComponent("ledger-before-demo.json") }
+    private var everything: DateInterval { DateInterval(start: .distantPast, end: .distantFuture) }
+
+    /// Shows the fixed demo week (see `DemoWeek`) and its budgets. With `replacing`, what was stored before is
+    /// first saved to a file and then taken out of the ledger, so today starts empty; `restoreAfterDemoWeek`
+    /// brings it back. Running this twice changes nothing more.
+    func loadDemoWeek(replacing: Bool) {
+        if replacing {
+            // Keep the first backup: it is the user's own ledger, not a later mix.
+            if let file = Self.demoBackupFile, !FileManager.default.fileExists(atPath: file.path) {
+                var mine = syncSnapshot()
+                mine.entries.removeAll { DemoWeek.ids.contains($0.id) }
+                try? FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try? mine.encoded().write(to: file, options: .atomic)
+            }
+            for entry in (try? store.entries(in: everything)) ?? [] where !DemoWeek.ids.contains(entry.id) {
+                try? store.delete(entryID: entry.id)
+            }
+            for budget in (try? store.budgets()) ?? [] { try? store.removeBudget(for: budget.category) }
+        }
+        for entry in DemoWeek.entries(now: now()) { try? store.upsert(entry) }
+        for budget in DemoWeek.budgets { try? store.setBudget(budget) }
+        clearUndo()
+        nudge = nil
+        refresh()
+    }
+
+    /// Removes the demo entries. Budgets and everything the user logged stay.
+    func clearDemoWeek() {
+        for id in DemoWeek.ids { try? store.delete(entryID: id) }
+        nudge = nil
+        refresh()
+    }
+
+    /// Takes the demo week out and puts back the ledger saved by `loadDemoWeek(replacing: true)`.
+    func restoreAfterDemoWeek() {
+        guard let file = Self.demoBackupFile, let data = try? Data(contentsOf: file),
+              let saved = SyncSnapshot.decode(data) else { return }
+        clearDemoWeek()
+        for budget in (try? store.budgets()) ?? [] { try? store.removeBudget(for: budget.category) }
+        for budget in saved.validBudgets { try? store.setBudget(budget) }
+        merge(saved)
+        try? FileManager.default.removeItem(at: file)
+    }
+
+    /// Everything stored, for a debug printout.
+    func debugDump() -> String {
+        let all = (try? store.entries(in: DateInterval(start: .distantPast, end: .distantFuture))) ?? []
+        let lines = all.map { "\($0.date.formatted(date: .abbreviated, time: .shortened)) | \(Money.format(cents: $0.amountCents)) | \($0.category.rawValue) | \($0.merchant ?? "-") | \(DemoWeek.ids.contains($0.id) ? "demo" : "user")" }
+        let budgets = ((try? store.budgets()) ?? []).map { "budget \($0.category.rawValue) \(Money.format(cents: $0.weeklyLimitCents))" }
+        return (lines + budgets + ["week total \(Money.format(cents: weekTotalCents)), \(entries.count) entries this week"]).joined(separator: "\n")
+    }
+    #endif
+
     func dismissFailure() {
         if case .failed = phase { phase = .idle }
     }

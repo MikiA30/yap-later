@@ -2,8 +2,15 @@ import Foundation
 
 /// Pure budget arithmetic. No storage, no clock of its own.
 enum BudgetMath {
-    /// The calendar week containing `date` (locale's first weekday).
-    static func weekInterval(containing date: Date, calendar: Calendar = .current) -> DateInterval {
+    /// The app's week runs Monday through Sunday, so a weekend's spending counts against the week it ends.
+    static let calendar: Calendar = {
+        var calendar = Calendar.current
+        calendar.firstWeekday = 2
+        return calendar
+    }()
+
+    /// The week containing `date`: Monday to Sunday unless another calendar is given.
+    static func weekInterval(containing date: Date, calendar: Calendar = BudgetMath.calendar) -> DateInterval {
         calendar.dateInterval(of: .weekOfYear, for: date) ?? DateInterval(start: date, duration: 7 * 86_400)
     }
 

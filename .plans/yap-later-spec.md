@@ -53,7 +53,7 @@ Also by voice: "Set my coffee budget to $25 a week" → creates or updates a wee
 - [Proposal] The amount in the proposal must be supported by the transcript (digits or number words). If it isn't, ask back instead of saving.
 - [Proposal] Categories (fixed): Groceries, Dining, Coffee, Transport, Shopping, Bills, Fun, Health, Other. Unknown → Other, never a new category.
 - [Proposal] Currency USD only. Store money as integer cents.
-- [Proposal] Week = the locale's calendar week (Sunday start in the US). "Yesterday", "this morning", and weekday names are resolved in code against the request time.
+- [Proposal] Week = Monday through Sunday (changed 2026-11-15 from the locale's Sunday start, so a weekend's spending counts against the week it ends). "Yesterday", "this morning", and weekday names are resolved in code against the request time.
 - [Proposal] Nudge rule: after an entry, if a category's remaining weekly budget is ≤ 25% of its limit (or ≤ $50 for limits over $200), or over the limit, nudge once per category per threshold per week. The nudge text only uses stored data.
 - [Proposal] Undo removes the entry completely and recomputes budgets; edits recompute too. No duplicate entries from repeated taps or retried inference.
 - Offline means the full flow works with Wi-Fi and cellular off and the Mac disconnected, after cold launch. All model and speech assets are provisioned beforehand.

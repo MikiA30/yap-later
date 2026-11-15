@@ -10,6 +10,9 @@ struct HomeView: View {
     @State private var showingBubbles = true
     @State private var greeted = false
     @State private var showingInsights = false
+    @State private var showingProfile = false
+    @State private var profile = ProfileStore()
+    private var pageOpen: Bool { showingInsights || showingProfile }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -43,14 +46,19 @@ struct HomeView: View {
             }
             .scrollIndicators(.hidden)
             // The home screen steps back a little as the charts slide over it.
-            .offset(x: showingInsights && !reduceMotion ? -70 : 0)
-            .opacity(showingInsights ? 0.4 : 1)
+            .offset(x: pageOpen && !reduceMotion ? -70 : 0)
+            .opacity(pageOpen ? 0.4 : 1)
 
             YapDock(model: model) { showingInsights = true }
-                .offset(x: showingInsights && !reduceMotion ? -70 : 0)
+                .offset(x: pageOpen && !reduceMotion ? -70 : 0)
 
             if showingInsights {
                 InsightsView(insights: model.insights) { showingInsights = false }
+                    .transition(reduceMotion ? AnyTransition.opacity : AnyTransition.move(edge: .trailing))
+                    .zIndex(5)
+            }
+            if showingProfile {
+                ProfileView(profile: profile, model: model) { showingProfile = false }
                     .transition(reduceMotion ? AnyTransition.opacity : AnyTransition.move(edge: .trailing))
                     .zIndex(5)
             }
@@ -63,6 +71,7 @@ struct HomeView: View {
             guard !greeted else { return }
             #if DEBUG
             if UserDefaults.standard.bool(forKey: "insights") { showingInsights = true } // `-insights YES` for screenshots
+            if UserDefaults.standard.bool(forKey: "profile") { showingProfile = true } // `-profile YES` for screenshots
             #endif
             withAnimation(Motion.present.delay(reduceMotion ? 0 : 0.35)) { greeted = true }
         }
@@ -78,6 +87,7 @@ struct HomeView: View {
         }
         .animation(Motion.present, value: model.nudge)
         .animation(.spring(duration: 0.55, bounce: 0.12), value: showingInsights)
+        .animation(.spring(duration: 0.55, bounce: 0.12), value: showingProfile)
         .sensoryFeedback(.warning, trigger: model.nudge?.id) { _, new in new != nil }
         .sensoryFeedback(.success, trigger: model.lastSaved?.id) { _, new in new != nil }
         .sheet(item: $editing) { entry in
@@ -92,15 +102,8 @@ struct HomeView: View {
 
     private var header: some View {
         HStack(spacing: Theme.Space.s) {
-            Text("yap later")
-                .font(Theme.display(22))
-                .foregroundStyle(Theme.ink)
+            LogoLockup()
             Spacer()
-            Button { model.startSync() } label: {
-                Chip(text: model.isSyncing ? "Stop" : "Sync", systemImage: "arrow.triangle.2.circlepath")
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(model.isSyncing ? "Stop syncing" : "Sync with your other device over Bluetooth")
             if model.usesMocks {
                 Chip(text: "MOCK", fill: Theme.lemon, foreground: .black)
                     .accessibilityLabel("Mock mode. Speech or the model is a stand-in.")
@@ -108,6 +111,11 @@ struct HomeView: View {
                 Chip(text: "On this \(LocalAssets.deviceName)", systemImage: "lock.fill")
                     .accessibilityLabel("Everything runs on this \(LocalAssets.deviceName). Model: \(model.interpreterName)")
             }
+            Button { showingProfile = true } label: {
+                Avatar(profile: profile, size: 38)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("You: name, picture, and sync")
         }
         .padding(.horizontal, Theme.Space.xl)
     }
@@ -128,8 +136,11 @@ struct HomeView: View {
 
     private var greeting: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("Hello.")
+            Text(profile.firstName.map { "Hello, \($0)." } ?? "Hello.")
                 .font(Theme.display(40))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .contentTransition(.opacity)
                 .foregroundStyle(Theme.ink)
             Text("\(Self.partOfDay()). Here's your week.")
                 .font(Theme.body)

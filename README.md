@@ -64,6 +64,8 @@ Not measured: energy or battery use. The latencies are in the table above; no cl
 
 ## Honest limitations
 
+- The demo video starts from a pre-loaded **demo week**: five earlier days of made-up, ordinary spending (`scripts/demo_week.sh`), so the charts and budgets have some history. It is demo data, not anyone's real spending. Everything said into the app during the video is interpreted live.
+- A week runs Monday through Sunday.
 - English and US dollars only.
 - A yap with several expenses is split in app code at commas and joining words, one amount per part; if any part is not a clear expense, the whole yap is treated as one request.
 - The app checks that the proposed amount matches a number you said; unusual phrasings of amounts may make it ask again.

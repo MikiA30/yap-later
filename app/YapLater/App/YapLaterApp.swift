@@ -33,6 +33,15 @@ struct YapLaterApp: App {
                         }
                         print("YAPTRY-END")
                     }
+                    if let demo = ProcessInfo.processInfo.environment["YAP_DEMO_WEEK"] {
+                        // Debug: `load` adds the demo week, `replace` saves the current ledger to a file and shows only the
+                        // demo week, `clear` removes the demo entries, `restore` undoes `replace`. Then print what is stored.
+                        if demo == "load" { model.loadDemoWeek(replacing: false) }
+                        if demo == "replace" { model.loadDemoWeek(replacing: true) }
+                        if demo == "clear" { model.clearDemoWeek() }
+                        if demo == "restore" { model.restoreAfterDemoWeek() }
+                        print("YAPDUMP-BEGIN\n" + model.debugDump() + "\nYAPDUMP-END")
+                    }
                     if ProcessInfo.processInfo.environment["YAP_SYNC"] != nil {
                         // Debug: start a sync as if the user tapped Sync, and print what it reports.
                         model.startSync()
