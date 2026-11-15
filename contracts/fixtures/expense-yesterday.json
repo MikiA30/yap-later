@@ -1,0 +1,8 @@
+{
+  "kind": "expense",
+  "amount": 22,
+  "merchant": "Uber",
+  "category": "transport",
+  "date_phrase": "yesterday",
+  "period": null
+}

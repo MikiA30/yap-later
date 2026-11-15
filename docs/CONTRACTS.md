@@ -1,51 +1,38 @@
-# Contracts v0 — proposed, no app implementation yet
+# Contracts
 
-> **Superseded in part (2026-11-15 03:35):** the product pivoted to a voice-first local expense tracker. `.plans/yap-later-spec.md` and `docs/TICKETS.md` are authoritative; this file still describes the earlier reminders flow until its ticket rewrites it.
+How a spoken sentence becomes stored data. Types live in `app/YapLater/Domain/`; JSON shapes in `contracts/`.
 
-T004 finalizes these boundaries and reconciles schema/fixtures before feature adapters rely on them.
+## 1. Request (app-owned)
 
-## 1. Interpretation request (app-owned)
+`InterpretationRequest`: `id`, `transcript`, `referenceInstant`, `timeZoneID`, `localeID`. The app owns the clock; the model is never asked what time it is. When the app has asked a question, the answer is appended to the earlier transcript ("Grabbed a coffee. Six fifty") and the whole thing is interpreted again.
 
-Fields: `requestID` UUID; `text` nonempty String; `referenceInstant` absolute Date; `timeZoneID` IANA identifier; `localeID` identifier; optional clarification answers. The app creates these values. Never trust the model to supply the current date or a new reference clock.
+## 2. Proposal (from the model, untrusted)
 
-The reference instant stays fixed for the interpretation conversation. A relative “in one minute” resolves against that instant; if it is no longer in the future at Save, ask the user to revise/refresh and reconfirm.
+`MoneyProposal`, shaped by `contracts/money-proposal.schema.json` and forced by a grammar: `kind` (`expense`, `budget_set`, `reminder`, `unsupported`), `amount` (dollars as said, or null), `merchant`, `category` (one of nine, or null), `date_phrase`, `period`.
 
-## 2. Model proposal (untrusted)
+For `reminder`, a second model step returns `contracts/reminder-details.schema.json`: `title`, `day` (`today`, `tomorrow`, a weekday, or `date`), `day_of_month`, `month`, `hour`, `minute`, `in_minutes`, `amount`. The model copies what was said; it does not compute dates.
 
-Machine format: `contracts/reminder-proposal.schema.json`. Exactly one reminder, no executable tool call. Three statuses: `ready`, `needs_clarification`, `unsupported`. Title can be absent until clarified. `schedule` is one of:
+## 3. Validation (app code decides)
 
-- `relative`: integer offset in seconds, plus the original time phrase.
-- `calendar`: local Gregorian `YYYY-MM-DD` date and 24-hour `HH:MM:SS` time, optional explicit time-zone ID, plus original phrase. Relative calendar wording such as “tomorrow” must be checked against the request context; do not blindly trust model-generated dates.
-- `unspecified`: no resolved schedule yet.
+`ProposalValidator` and `ReminderResolver` return one `ValidationOutcome`:
 
-`clarification` is null or one focused question. `ready` requires a nonempty title, a specified schedule, and null clarification. `needs_clarification` requires a question. Multiple tasks, recurrence, or location requests outside scope return clarification/unsupported; do not silently drop requested work.
+- `expense(Entry)`: the amount must be one the transcript could mean (`AmountEvidence`: digits, number words, and spoken prices like "six fifty"), within $0.01 to $100,000. Unknown categories become Other. Dates like "yesterday", "two days ago", "on Friday" are resolved in code and are never in the future.
+- `budgetSet(Budget)`: needs a known category and a said amount; weekly.
+- `reminder(ReminderDraft)`: needs a title and a time. An hour from 1 to 11 with no morning/evening word asks "At 6, morning or evening?"; evening words move the hour in code. A day with no time defaults to 9:00 AM, shown on the card. Past times roll forward when no day was given, otherwise are refused.
+- `askBack(question)`: something essential is missing. Spoken aloud; at most two questions per yap.
+- `unsupported(message)`.
 
-The JSON Schema is syntactic structure only. T006 must enforce cross-field semantics, date validity, reasonable ranges, past-date behavior, timezone validity, unsupported recurrence, and ambiguity. Matching JSON is not permission to save.
+## 4. Storage and side effects
 
-## 3. Validated draft (app-owned)
+- Expenses auto-save through `LedgerStore.upsert` (idempotent per entry id; the id is the request id) with a six-second Undo and tap-to-edit. Money is integer cents, USD.
+- Budgets: one per category, replaced on set.
+- Nudges: `BudgetMath.nudge(before:after:)` fires only when a budget's level gets worse (fine → low → spent → over). Low is 25% of the limit left, or $50 for limits over $200. The message uses stored numbers only. Shown in the app, spoken, and posted as a notification.
+- Reminders: nothing is written until the user taps Save on the card; then one `EKReminder` with due date components and an explicit `EKAlarm`. A second tap while saving is ignored. Saved reminders are listed under "Coming up" from a local log.
 
-Fields: `draftID`, `revision`, `requestID`, original text/reference instant, validated nonempty title, absolute `dueAt`, display time-zone ID, selected writable list identifier, and validation state. Convert calendar components through the user's calendar/time-zone rules. Invalid dates, DST gaps, and repeated clock times need explicit handling; do not normalize silently to another time.
+## 5. States
 
-The preview formats dueAt into an explicit date, time, and time-zone label. Any user edit increments revision and invalidates prior confirmation. List identifiers originate from EventKit, never model text.
-
-## 4. Save boundary
-
-`ReminderRepository.save(confirmedDraft, saveIntentID)` returns a receipt or typed failure. A confirmed draft contains the exact reviewed revision and validated destination list. Revalidate the time and authorization immediately before the write. The repository creates an EKReminder with due components and an explicit EKAlarm for the intended instant, then commits it.
-
-Proposed receipt: saveIntentID, EventKit reminder identifier, savedAt, title, dueAt, list identifier. A receipt proves persistence, not alert delivery. Disable duplicate taps while saving and reuse one intent for retry. Persist a minimal local receipt to reduce duplicate creation across relaunch; if a crash happens between EventKit commit and receipt persistence, report an uncertain outcome and reconcile rather than claiming exactly-once atomicity.
-
-Do not read unrelated reminder contents for a simple save. Query only what is needed for list choice or explicit retry reconciliation. The system permission may be broader than the app's actual use.
-
-## 5. State and errors
-
-States: idle → loadingModel/interpreting → clarifying or reviewing → saving → saved. Errors return to an editable state without an implicit write. Cancellation increments the request generation; late inference results are ignored. A Save completion cannot attach to a newer draft.
-
-Typed failures: modelMissing, runtimeUnavailable, inferenceCancelled, inferenceFailed, invalidProposal, clarificationRequired, invalidSchedule, permissionDenied, listUnavailable, saveFailed, saveOutcomeUnknown. Keep technical diagnostics separate from concise user-facing recovery guidance.
-
-## 6. Optional voice
-
-On-device speech yields text into the same InterpretationRequest boundary. User sees/corrects the transcript. No new save path. Microphone capture is explicitly started/stopped; no continuous background listening in this scope.
+`AppModel.Phase`: idle → listening → transcribing → thinking → idle, asking(question), or failed(message). Cancelling or starting a new yap bumps a generation counter; late results are dropped.
 
 ## Change record
 
-2026-11-15: v0 proposed from the pivot conversation. No interface has been implemented or validated on-device.
+- 2026-11-15: v1 for the money pivot; replaces the reminders-only v0. Implemented and exercised on the iPhone 17 Pro; reminders verified by unit tests and the on-device model eval, not yet by a live voice run.

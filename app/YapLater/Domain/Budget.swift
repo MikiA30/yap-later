@@ -1,7 +1,7 @@
 import Foundation
 
 /// A weekly spending limit for one category.
-struct Budget: Identifiable, Equatable, Sendable {
+struct Budget: Identifiable, Hashable, Sendable {
     let category: Category
     var weeklyLimitCents: Int
     var id: Category { category }

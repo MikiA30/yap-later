@@ -10,7 +10,7 @@ required = ['AGENTS.md','CLAUDE.md','README.md','START_HERE.md',
     'docs/PLAN.md','docs/ARCHITECTURE.md','docs/CONTRACTS.md','docs/FEASIBILITY.md',
     'docs/TICKETS.md','docs/DECISIONS.md','docs/COMMANDS.md','docs/DEMO.md',
     'docs/PREPARATION.md','docs/SOURCES.md','.claude/skills/interview/SKILL.md',
-    '.claude/skills/interview/LICENSE','contracts/reminder-proposal.schema.json',
+    '.claude/skills/interview/LICENSE','contracts/money-proposal.schema.json',
     'eval/requests.json','scripts/worktree.sh','scripts/create_issues.py',
     '.claude/skills/swiftui-motion/SKILL.md']
 for name in required:
