@@ -1,0 +1,12 @@
+{
+  "status": "ready",
+  "title": "Submit physics homework",
+  "schedule": {
+    "kind": "calendar",
+    "date": "2026-11-16",
+    "time": "18:00:00",
+    "timeZoneID": "America/New_York",
+    "originalPhrase": "November 16, 2026 at 6 PM New York time"
+  },
+  "clarification": null
+}

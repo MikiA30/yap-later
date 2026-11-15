@@ -1,0 +1,10 @@
+{
+  "status": "ready",
+  "title": "Check my homework",
+  "schedule": {
+    "kind": "relative",
+    "offsetSeconds": 60,
+    "originalPhrase": "in one minute"
+  },
+  "clarification": null
+}

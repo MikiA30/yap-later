@@ -1,0 +1,8 @@
+{
+  "status": "unsupported",
+  "title": "Take out recycling",
+  "schedule": {
+    "kind": "unspecified"
+  },
+  "clarification": "Recurring reminders are not supported in this version. Would you like a single dated reminder?"
+}
