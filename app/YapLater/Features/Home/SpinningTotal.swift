@@ -10,7 +10,12 @@ struct SpinningTotal: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        ExtrudedAmount(text: Money.format(cents: cents), cents: cents, angle: angle)
+        TimelineView(.animation(minimumInterval: 1.0 / 60, paused: reduceMotion)) { context in
+            // At rest the number rocks slowly from side to side, so its thickness is always visible.
+            let sway = reduceMotion ? -16 : sin(context.date.timeIntervalSinceReferenceDate * 0.9) * 15
+            ExtrudedAmount(text: Money.format(cents: cents), cents: cents, angle: angle, sway: sway)
+        }
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
             .gesture(reduceMotion ? nil : drag)
             .onTapGesture { if !reduceMotion { spin(to: angle + 360) } }
@@ -61,30 +66,43 @@ struct SpinningTotal: View {
 struct ExtrudedAmount: View, Animatable {
     let text: String
     let cents: Int
+    /// The spin: animated, so each frame is drawn at its true angle.
     var angle: Double
+    /// A small extra turn applied on top, updated every frame and never animated.
+    var sway: Double = 0
 
     var animatableData: Double {
         get { angle }
         set { angle = newValue }
     }
 
-    private static let slices = 9
-    private static let spacing: CGFloat = 1.5
+    private static let slices = 18
+    private static let spacing: CGFloat = 1.4
 
     var body: some View {
-        let radians = angle * .pi / 180
+        let turned = angle + sway
+        let radians = turned * .pi / 180
         let frontFacing = cos(radians) >= 0
         ZStack(alignment: .leading) {
             ForEach(0..<Self.slices, id: \.self) { index in
                 slice(index, mirrored: !frontFacing)
-                    .rotation3DEffect(.degrees(angle), axis: (x: 0, y: 1, z: 0), anchor: .center,
+                    .rotation3DEffect(.degrees(turned), axis: (x: 0, y: 1, z: 0), anchor: .center,
                                       anchorZ: (CGFloat(index) - CGFloat(Self.slices - 1) / 2) * Self.spacing,
                                       perspective: 0.5)
                     .zIndex(frontFacing ? Double(Self.slices - index) : Double(index))
             }
         }
         // A little darker as it turns away from the light.
-        .brightness(-0.18 * abs(sin(radians)))
+        .brightness(-0.16 * abs(sin(radians)))
+        // The shadow it casts on the page narrows as it turns edge-on.
+        .background(alignment: .bottom) {
+            Ellipse()
+                .fill(Color.black.opacity(0.22))
+                .frame(height: 12)
+                .scaleEffect(x: 0.35 + 0.6 * abs(cos(radians)))
+                .blur(radius: 7)
+                .offset(y: 8)
+        }
     }
 
     @ViewBuilder
@@ -92,7 +110,7 @@ struct ExtrudedAmount: View, Animatable {
         let isFront = index == 0, isBack = index == Self.slices - 1
         Text(text)
             .font(Theme.display(68))
-            .foregroundStyle(isFront ? Theme.ink : isBack ? Theme.brand : Theme.brandEdge)
+            .foregroundStyle(isFront ? Theme.ink : isBack ? Theme.brand : (index % 2 == 0 ? Theme.brandEdge : Theme.brand))
             .contentTransition(.numericText(value: Double(cents)))
             .animation(Motion.move, value: cents)
             .minimumScaleFactor(0.5)

@@ -9,10 +9,11 @@ struct HomeView: View {
     /// The opening moment plays once per launch: bubbles rise, then the greeting settles in.
     @State private var showingBubbles = true
     @State private var greeted = false
+    @State private var showingInsights = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Theme.paper.ignoresSafeArea()
+            AppBackdrop()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.Space.xl) {
@@ -31,6 +32,7 @@ struct HomeView: View {
                     BudgetStrip(statuses: model.budgetStatuses, highlighted: model.lastBudgetSet?.category) {
                         showingBudgets = true
                     }
+                    .zIndex(1) // a budget card that steps forward sits above its neighbors
                     if !model.upcomingReminders.isEmpty {
                         UpcomingList(reminders: model.upcomingReminders)
                     }
@@ -40,8 +42,18 @@ struct HomeView: View {
                 .padding(.bottom, 260) // room for the dock
             }
             .scrollIndicators(.hidden)
+            // The home screen steps back a little as the charts slide over it.
+            .offset(x: showingInsights && !reduceMotion ? -70 : 0)
+            .opacity(showingInsights ? 0.4 : 1)
 
-            YapDock(model: model)
+            YapDock(model: model) { showingInsights = true }
+                .offset(x: showingInsights && !reduceMotion ? -70 : 0)
+
+            if showingInsights {
+                InsightsView(insights: model.insights) { showingInsights = false }
+                    .transition(reduceMotion ? AnyTransition.opacity : AnyTransition.move(edge: .trailing))
+                    .zIndex(5)
+            }
 
             if showingBubbles, !reduceMotion {
                 LaunchBubbles { showingBubbles = false }
@@ -49,6 +61,9 @@ struct HomeView: View {
         }
         .onAppear {
             guard !greeted else { return }
+            #if DEBUG
+            if UserDefaults.standard.bool(forKey: "insights") { showingInsights = true } // `-insights YES` for screenshots
+            #endif
             withAnimation(Motion.present.delay(reduceMotion ? 0 : 0.35)) { greeted = true }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
@@ -62,6 +77,7 @@ struct HomeView: View {
             }
         }
         .animation(Motion.present, value: model.nudge)
+        .animation(.spring(duration: 0.55, bounce: 0.12), value: showingInsights)
         .sensoryFeedback(.warning, trigger: model.nudge?.id) { _, new in new != nil }
         .sensoryFeedback(.success, trigger: model.lastSaved?.id) { _, new in new != nil }
         .sheet(item: $editing) { entry in

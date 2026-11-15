@@ -31,6 +31,13 @@ struct StickerCard: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(fill, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
+            // A hairline of light along the top edge, so a card reads as a raised surface in dark mode too.
+            .overlay {
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .strokeBorder(LinearGradient(colors: [.white.opacity(0.16), .white.opacity(0)],
+                                                 startPoint: .top, endPoint: .center), lineWidth: 1)
+                    .allowsHitTesting(false)
+            }
             .background(edge, in: RoundedRectangle(cornerRadius: radius, style: .continuous).offset(y: 4))
             .padding(.bottom, 4)
     }
