@@ -14,19 +14,14 @@ Inside Claude: `/interview`, `/kickoff`, `/tickets`, `/skeleton`, `/task T002`, 
 
 `claude plugin validate --strict .claude/skills` and `claude plugin validate --strict .claude/commands` check Claude configuration when that CLI is installed.
 
-## App commands: not established
+## App commands
 
-No Xcode project exists yet. T001 must record the actual project, scheme, destination/device ID, signing setup, build/run/test commands, and which commands were executed. Do not copy ket-lite's macOS build commands or assert that an iOS Simulator validates Metal inference.
+Project: `app/YapLater.xcodeproj` (hand-written, Xcode 26.6, folders synced from disk: new Swift files under `app/YapLater/` or `app/YapLaterTests/` are picked up automatically). Scheme `YapLater`. Bundle ID `com.mikiyas.yaplater`. Signing: automatic, Personal Team `MWY85H9F24`. Deployment target iOS 26.0, iPhone only.
 
-| Check | Actual command | Result/evidence |
+| Check | Actual command (from `app/`) | Result/evidence |
 |---|---|---|
-| Build iOS app | TBD in T001 | NOT RUN |
-| Install/launch on user's iPhone | TBD in T001 | NOT RUN |
-| Unit/contract tests | TBD in T004 | NOT RUN |
-| Local model probe | TBD in T002 | NOT RUN |
-| Reminder/alert probe | TBD in T003 | NOT RUN |
-| Full offline acceptance | Procedure in docs/DEMO.md | NOT RUN |
+| Unit tests, simulator | `xcodebuild test -project YapLater.xcodeproj -scheme YapLater -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO` | 2026-11-15 03:21 EST: TEST SUCCEEDED, 5 tests (Swift Testing) |
+| Launch, simulator | `xcrun simctl install <sim> <YapLater.app>` then `xcrun simctl launch <sim> com.mikiyas.yaplater` | 2026-11-15 03:22 EST: launched on iPhone 17 Pro simulator; screenshot showed the MOCK-labeled home screen. Tapping the button in the simulator was not exercised by hand; the flow is covered by unit tests |
+| Build and install, real iPhone | `xcodebuild -project YapLater.xcodeproj -scheme YapLater -destination 'platform=iOS,name=Miki’s iPhone' -allowProvisioningUpdates build`, then `xcrun devicectl device install app --device <id> <YapLater.app>` and `xcrun devicectl device process launch --device <id> com.mikiyas.yaplater` | NOT RUN: the iPhone was listed as unavailable (not connected) |
 
-## Git
-
-The new repository has no remote and no inherited issues. Make an initial reviewed local commit before branching. `scripts/worktree.sh <branch>` creates a separate working copy from local `main` once an initial commit exists. Add a new remote only after the destination is chosen. Local ticket keys remain separate from any GitHub numbering.
+The simulator does not validate Metal inference, the microphone path, or notifications on a locked phone.

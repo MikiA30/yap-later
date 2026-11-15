@@ -41,8 +41,8 @@ Revised 2026-11-15 03:35 EST after the interview (`.plans/yap-later-spec.md`): *
 ### [T001] Create the signed iPhone shell with a labeled mock yap flow
 Area: foundation
 Priority: must-have
-Status: ready
-Owner/session: unclaimed
+Status: in-progress
+Owner/session: Claude Code main session
 Timebox: 40 min
 Depends on: none
 Allowed files: app/, docs/COMMANDS.md, docs/FEASIBILITY.md, .gitignore

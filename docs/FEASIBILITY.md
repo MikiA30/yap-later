@@ -4,7 +4,7 @@ All gates begin **NOT RUN**. A compiled simulator build, Mac model response, or 
 
 | Gate | Task | Required evidence | Status |
 |---|---|---|---|
-| G0: device launch | T001 | Physical iPhone model/iOS, signing path, successful signed app launch | NOT RUN |
+| G0: device launch | T001 | Physical iPhone model/iOS, signing path, successful signed app launch | NOT RUN on the phone (iPhone not connected at 03:22). Simulator only: build, 5 unit tests, and launch passed |
 | G1: local model | T002 | Exact checkpoint/revision/quantization/runtime, offline text output, cold/warm latency, memory if measurable, repeated requests | NOT RUN |
 | G2: Apple Reminder | T003 | Permission result, writable list, saved reminder with due date and alarm, locked-phone alert with networking off | NOT RUN |
 | G3: full offline loop | T011 | Cold launch, fresh typed input, valid reviewed draft, save, and observed alert with no Mac/cloud dependency | NOT RUN |
