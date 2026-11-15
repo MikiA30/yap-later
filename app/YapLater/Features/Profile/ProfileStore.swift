@@ -1,27 +1,88 @@
 import SwiftUI
+import ImageIO
 #if canImport(UIKit)
 import UIKit
 #else
 import AppKit
 #endif
 
-/// The user's name and picture. Both are kept on this device only: the name in the app's settings,
-/// the picture as a file beside the models. There is no account behind this.
+/// The user's name and picture: the name in the app's settings, the picture as a file beside the models.
+/// There is no account behind this. They leave the device only when the user taps Sync, and then only
+/// over Bluetooth to their own other device.
 @MainActor
 @Observable
 final class ProfileStore {
     var name: String {
-        didSet { UserDefaults.standard.set(name, forKey: "profile.name") }
+        didSet {
+            guard name != oldValue else { return }
+            defaults.set(name, forKey: "profile.name")
+            if !adopting { touch() }
+        }
     }
     private(set) var photo: Image?
     /// Changes whenever the picture does, so views can animate the swap.
     private(set) var photoVersion = 0
 
-    private static var photoFile: URL? { LocalAssets.root?.appendingPathComponent("profile-photo.jpg") }
+    /// When the name or picture was last changed by hand on either device. Decides which side wins a sync.
+    private(set) var changedAt: Date
 
-    init() {
-        name = UserDefaults.standard.string(forKey: "profile.name") ?? ""
-        if let file = Self.photoFile, let data = try? Data(contentsOf: file) { photo = Self.image(from: data) }
+    private let defaults: UserDefaults
+    private let photoFile: URL?
+    private var adopting = false
+
+    nonisolated static var defaultPhotoFile: URL? { LocalAssets.root?.appendingPathComponent("profile-photo.jpg") }
+
+    init(defaults: UserDefaults = .standard, photoFile: URL? = ProfileStore.defaultPhotoFile) {
+        self.defaults = defaults
+        self.photoFile = photoFile
+        name = defaults.string(forKey: "profile.name") ?? ""
+        changedAt = defaults.object(forKey: "profile.changedAt") as? Date ?? .distantPast
+        if let photoFile, let data = try? Data(contentsOf: photoFile) { photo = Self.image(from: data) }
+    }
+
+    private func touch() {
+        changedAt = .now
+        defaults.set(changedAt, forKey: "profile.changedAt")
+    }
+
+    // MARK: Sync with the user's other device
+
+    /// The name and a small copy of the picture, sized to travel over Bluetooth in a few seconds.
+    var forSync: SyncSnapshot.Profile {
+        let small = photoFile.flatMap { try? Data(contentsOf: $0) }
+            .flatMap { Self.smallJPEG(from: $0, maxPixel: 360, quality: 0.72) }
+        return SyncSnapshot.Profile(name: name, photo: small, changedAt: changedAt)
+    }
+
+    /// Takes the name and picture that arrived from the other device. The caller has already decided
+    /// that they are newer. A picture that is too large or is not an image is ignored.
+    func adopt(_ other: SyncSnapshot.Profile) {
+        adopting = true
+        name = String(other.name.prefix(80))
+        adopting = false
+        if let data = other.photo, data.count <= 600_000, let image = Self.image(from: data), let photoFile {
+            try? FileManager.default.createDirectory(at: photoFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? data.write(to: photoFile, options: .atomic)
+            photo = image
+        } else if other.photo == nil {
+            if let photoFile { try? FileManager.default.removeItem(at: photoFile) }
+            photo = nil
+        }
+        photoVersion += 1
+        changedAt = other.changedAt
+        defaults.set(changedAt, forKey: "profile.changedAt")
+    }
+
+    private static func smallJPEG(from data: Data, maxPixel: Int, quality: Double) -> Data? {
+        let options: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,
+                                        kCGImageSourceCreateThumbnailWithTransform: true,
+                                        kCGImageSourceThumbnailMaxPixelSize: maxPixel]
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        let output = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(output, "public.jpeg" as CFString, 1, nil) else { return nil }
+        CGImageDestinationAddImage(destination, image, [kCGImageDestinationLossyCompressionQuality: quality] as CFDictionary)
+        return CGImageDestinationFinalize(destination) ? output as Data : nil
     }
 
     var firstName: String? {
@@ -35,17 +96,19 @@ final class ProfileStore {
 
     /// Stores a newly chosen picture, scaled down to what the screen needs.
     func setPhoto(_ data: Data) {
-        guard let file = Self.photoFile, let small = Self.scaledJPEG(from: data) else { return }
+        guard let file = photoFile, let small = Self.scaledJPEG(from: data) else { return }
         try? FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? small.write(to: file, options: .atomic)
         photo = Self.image(from: small)
         photoVersion += 1
+        touch()
     }
 
     func removePhoto() {
-        if let file = Self.photoFile { try? FileManager.default.removeItem(at: file) }
+        if let file = photoFile { try? FileManager.default.removeItem(at: file) }
         photo = nil
         photoVersion += 1
+        touch()
     }
 
     private static func image(from data: Data) -> Image? {

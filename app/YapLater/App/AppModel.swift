@@ -73,6 +73,8 @@ final class AppModel {
     private let notifier: any NudgeNotifier
     private let reminders: any ReminderSaving
     private let reminderLog: ReminderLog
+    /// The user's name and picture. Views read and edit it; sync carries it to the other device.
+    let profile: ProfileStore
     private let now: @Sendable () -> Date
     private let undoWindow: Duration
 
@@ -97,6 +99,7 @@ final class AppModel {
          notifier: any NudgeNotifier = NoopNudgeNotifier(),
          reminders: (any ReminderSaving)? = nil,
          reminderLog: ReminderLog? = nil,
+         profile: ProfileStore? = nil,
          undoWindow: Duration = .seconds(6),
          now: @escaping @Sendable () -> Date = { .now }) {
         self.transcriber = transcriber
@@ -107,6 +110,7 @@ final class AppModel {
         self.notifier = notifier
         self.reminders = reminders ?? RecordingReminderSaver()
         self.reminderLog = reminderLog ?? ReminderLog(defaults: nil)
+        self.profile = profile ?? ProfileStore()
         self.undoWindow = undoWindow
         self.now = now
         self.usesMocks = transcriber.isMock || interpreter.isMock
@@ -282,20 +286,42 @@ final class AppModel {
         return added
     }
 
+    /// Takes the other device's name and picture when they were changed more recently than this device's,
+    /// or when nothing is set here. Returns whether anything changed.
+    @discardableResult
+    func mergeProfile(_ theirs: SyncSnapshot.Profile?) -> Bool {
+        guard let theirs, theirs.shouldReplace(profile.forSync) else { return false }
+        profile.adopt(theirs)
+        return true
+    }
+
     /// The user tapped Sync: look for the other device over Bluetooth and exchange ledgers once.
     func startSync() {
         guard sync == nil else { return stopSync() }
         var added = 0
+        var profileChanged = false
+        var received: SyncSnapshot.Profile?
         let session = BluetoothSync.make(
-            snapshot: { [weak self] in self?.syncSnapshot().encoded() ?? Data() },
+            snapshot: { [weak self] in
+                guard let self else { return Data() }
+                var mine = self.syncSnapshot()
+                let profile = self.profile.forSync
+                // Nothing to send when there is no profile, or when it is the one that just arrived.
+                let isEcho = received.map { $0.name == profile.name && $0.changedAt == profile.changedAt } ?? false
+                if !profile.isEmpty && !isEcho { mine.profile = profile }
+                return mine.encoded()
+            },
             receive: { [weak self] data in
                 guard let self, let snapshot = SyncSnapshot.decode(data) else { return }
                 added = self.merge(snapshot)
+                received = snapshot.profile
+                profileChanged = self.mergeProfile(snapshot.profile)
             },
             status: { [weak self] message, finished in
                 guard let self else { return }
                 if finished {
-                    let detail = message.hasPrefix("Synced") ? " \(added) new here." : ""
+                    let detail = message.hasPrefix("Synced")
+                        ? " \(added) new here." + (profileChanged ? " Profile updated." : "") : ""
                     self.finishSync(message + detail)
                 } else {
                     self.syncStatus = message

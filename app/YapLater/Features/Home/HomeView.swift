@@ -11,7 +11,7 @@ struct HomeView: View {
     @State private var greeted = false
     @State private var showingInsights = false
     @State private var showingProfile = false
-    @State private var profile = ProfileStore()
+    private var profile: ProfileStore { model.profile }
     private var pageOpen: Bool { showingInsights || showingProfile }
 
     var body: some View {
