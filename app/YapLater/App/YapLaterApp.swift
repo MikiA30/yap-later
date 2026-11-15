@@ -65,12 +65,14 @@ struct YapLaterApp: App {
                         try? await Task.sleep(for: .seconds(12))
                         speaker.speak("Only fifty dollars left for groceries this week.")
                         try? await Task.sleep(for: .seconds(12))
-                        // The microphone must still work right after the voice has played.
+                        // Interrupting must silence the voice at once, and the microphone must then hear no trace of it.
+                        speaker.speak("Only fifty dollars left for groceries this week, and thirty dollars left for coffee.")
+                        try? await Task.sleep(for: .milliseconds(1500))
                         speaker.stop()
                         if ProcessInfo.processInfo.environment["YAP_TTS_MIC"] != nil { do {
                             try await AppEnvironment.sharedWhisper.prepare()
                             try await AppEnvironment.sharedWhisper.start { _ in }
-                            try? await Task.sleep(for: .seconds(2))
+                            try? await Task.sleep(for: .seconds(4))
                             let heard = try await AppEnvironment.sharedWhisper.stop()
                             print("YAPTTS microphone after voice: ok, heard \"\(heard)\"")
                         } catch { print("YAPTTS microphone after voice: FAILED \(error)") } }
