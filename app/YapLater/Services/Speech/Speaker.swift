@@ -10,12 +10,15 @@ protocol Speaker: AnyObject {
 @MainActor
 final class SystemSpeaker: Speaker {
     private let synthesizer = AVSpeechSynthesizer()
+    /// The most natural English voice installed on this phone (premium, then enhanced, then default).
+    static let voice: AVSpeechSynthesisVoice? = AVSpeechSynthesisVoice.speechVoices()
+        .filter { $0.language == "en-US" }
+        .max { $0.quality.rawValue < $1.quality.rawValue } ?? AVSpeechSynthesisVoice(language: "en-US")
 
     func speak(_ text: String) {
         synthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 1.05
+        utterance.voice = Self.voice
         synthesizer.speak(utterance)
     }
 

@@ -13,8 +13,14 @@ actor WhisperKitTranscriber: SpeechTranscriber {
     private var levelTask: Task<Void, Never>?
     private var recording = false
 
-    init(modelName: String = "openai_whisper-small") {
+    /// Shown to Whisper as earlier text so it writes amounts as words ("six fifty"), not bare digits ("650").
+    /// Digits lose the difference between $6.50 and $650; the words keep it for the model to read.
+    static let defaultPrompt = "Spent six fifty on coffee. Lunch was thirteen forty five. Paid six hundred fifty dollars for rent. Twenty two dollars on gas."
+    private let prompt: String?
+
+    init(modelName: String = "openai_whisper-small", prompt: String? = WhisperKitTranscriber.defaultPrompt) {
         self.modelName = modelName
+        self.prompt = ProcessInfo.processInfo.environment["YAP_WHISPER_PROMPT"] ?? prompt
     }
 
     /// `Documents/speech/<model>` when the model was copied onto the phone ahead of time.
@@ -84,17 +90,26 @@ actor WhisperKitTranscriber: SpeechTranscriber {
         kit.audioProcessor.stopRecording()
         let samples = Array(kit.audioProcessor.audioSamples)
         guard samples.count > 16_000 / 3 else { return "" } // under a third of a second: nothing was said
-        let options = DecodingOptions(task: .transcribe, language: "en", temperature: 0,
+        let started = Date()
+        let text = try await transcribe(samples: samples, prompt: prompt)
+        #if DEBUG
+        print("YAP speech: \(String(format: "%.1f", Double(samples.count) / 16_000)) s of audio transcribed in \(Int(Date().timeIntervalSince(started) * 1000)) ms")
+        #endif
+        return text
+    }
+
+    /// Transcribes 16 kHz mono samples. `prompt` biases the writing style (see `defaultPrompt`).
+    func transcribe(samples: [Float], prompt: String?) async throws -> String {
+        let kit = try await loadedKit()
+        var options = DecodingOptions(task: .transcribe, language: "en", temperature: 0,
                                       skipSpecialTokens: true, withoutTimestamps: true)
+        if let prompt, !prompt.isEmpty, let tokenizer = kit.tokenizer {
+            options.promptTokens = tokenizer.encode(text: " " + prompt)
+                .filter { $0 < tokenizer.specialTokens.specialTokenBegin }
+        }
         do {
-            let started = Date()
             let results = try await kit.transcribe(audioArray: samples, decodeOptions: options)
-            let text = results.map(\.text).joined(separator: " ")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            #if DEBUG
-            print("YAP speech: \(String(format: "%.1f", Double(samples.count) / 16_000)) s of audio transcribed in \(Int(Date().timeIntervalSince(started) * 1000)) ms")
-            #endif
-            return text
+            return results.map(\.text).joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
         } catch {
             throw SpeechError.failed("\(error)")
         }

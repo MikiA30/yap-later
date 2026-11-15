@@ -19,6 +19,9 @@ struct YapLaterApp: App {
                     if let scenario = AppEnvironment.scenario {
                         await DebugScenarios.run(scenario, model: model)
                     }
+                    if ProcessInfo.processInfo.environment["YAP_SPEECH_EVAL"] != nil {
+                        print("YAPLATER-SPEECH-BEGIN\n" + (await SpeechEval.run(AppEnvironment.sharedWhisper)) + "\nYAPLATER-SPEECH-END")
+                    }
                     if UserDefaults.standard.bool(forKey: "eval") || ProcessInfo.processInfo.environment["YAP_EVAL"] != nil {
                         // Score the active on-device model on the built-in utterances and print the report.
                         let interpreter = AppEnvironment.sharedInterpreter
@@ -56,7 +59,7 @@ enum AppEnvironment {
         #if targetEnvironment(simulator)
         let transcriber: any SpeechTranscriber = MockTranscriber()
         #else
-        let transcriber: any SpeechTranscriber = WhisperKitTranscriber()
+        let transcriber: any SpeechTranscriber = sharedWhisper
         #endif
         let interpreter = sharedInterpreter
         let store: any LedgerStore = (try? SwiftDataLedgerStore()) ?? InMemoryLedgerStore()
@@ -66,6 +69,9 @@ enum AppEnvironment {
 
     /// Sponsor model first (Bonsai 2 via llama.cpp, when its file is on the phone), then Apple's on-device
     /// model as a labeled fallback, then the mock (which makes the UI say MOCK).
+    /// One speech recognizer for the whole app, so its model is loaded once.
+    static let sharedWhisper = WhisperKitTranscriber()
+
     /// One interpreter for the whole app, so the model is loaded once.
     static let sharedInterpreter: any MoneyInterpreter = makeInterpreter()
 
