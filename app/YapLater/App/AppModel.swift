@@ -45,6 +45,9 @@ final class AppModel {
     /// Reminders this app created that are still ahead, soonest first.
     private(set) var upcomingReminders: [ReminderDraft] = []
     private(set) var isSavingReminder = false
+    /// What the Mac-and-iPhone sync is doing, while it runs and briefly after; nil otherwise.
+    private(set) var syncStatus: String?
+    var isSyncing: Bool { sync != nil }
     /// True when speech or interpretation is a stand-in. Views must show this.
     let usesMocks: Bool
     /// Which model interprets yaps, for display: the sponsor model, the fallback, or the mock.
@@ -79,6 +82,8 @@ final class AppModel {
     private var undoTask: Task<Void, Never>?
     /// What was said before an ask-back, so the answer is interpreted together with it.
     private var pendingContext: String?
+    private var sync: (any PeerSyncing)?
+    private var syncTimeout: Task<Void, Never>?
     private var askCount = 0
     static let maxAsks = 2
 
@@ -249,6 +254,74 @@ final class AppModel {
     }
 
     func dismissSavedReminder() { savedReminder = nil }
+
+    // MARK: Sync between the user's own devices
+
+    /// Everything in this device's ledger, for the user's other device.
+    func syncSnapshot() -> SyncSnapshot {
+        let everything = DateInterval(start: .distantPast, end: .distantFuture)
+        return SyncSnapshot(entries: (try? store.entries(in: everything)) ?? [], budgets: (try? store.budgets()) ?? [])
+    }
+
+    /// Adds the entries and budgets this device does not have yet. Nothing here is changed or removed,
+    /// and no nudge is raised. Returns how many entries were added.
+    @discardableResult
+    func merge(_ snapshot: SyncSnapshot) -> Int {
+        let known = Set(syncSnapshot().entries.map(\.id))
+        var added = 0
+        for entry in snapshot.validEntries where !known.contains(entry.id) {
+            if (try? store.upsert(entry)) != nil { added += 1 }
+        }
+        let budgeted = Set(((try? store.budgets()) ?? []).map(\.category))
+        for budget in snapshot.validBudgets where !budgeted.contains(budget.category) {
+            try? store.setBudget(budget)
+        }
+        refresh()
+        return added
+    }
+
+    /// The user tapped Sync: look for the other device over Bluetooth and exchange ledgers once.
+    func startSync() {
+        guard sync == nil else { return stopSync() }
+        var added = 0
+        let session = BluetoothSync.make(
+            snapshot: { [weak self] in self?.syncSnapshot().encoded() ?? Data() },
+            receive: { [weak self] data in
+                guard let self, let snapshot = SyncSnapshot.decode(data) else { return }
+                added = self.merge(snapshot)
+            },
+            status: { [weak self] message, finished in
+                guard let self else { return }
+                if finished {
+                    let detail = message.hasPrefix("Synced") ? " \(added) new here." : ""
+                    self.finishSync(message + detail)
+                } else {
+                    self.syncStatus = message
+                }
+            })
+        sync = session
+        syncStatus = "Starting Bluetooth…"
+        session.start()
+        syncTimeout = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(45))
+            guard !Task.isCancelled else { return }
+            self?.finishSync("No other device found. Open Yap Later there and tap Sync.")
+        }
+    }
+
+    func stopSync() { finishSync(nil) }
+
+    private func finishSync(_ message: String?) {
+        syncTimeout?.cancel()
+        sync?.stop()
+        sync = nil
+        syncStatus = message
+        guard let message else { return }
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(6))
+            if self?.syncStatus == message { self?.syncStatus = nil }
+        }
+    }
 
     func dismissFailure() {
         if case .failed = phase { phase = .idle }

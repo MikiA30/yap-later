@@ -39,6 +39,7 @@ Status as of 2026-11-15 08:30 EST: the kickoff deck arrived (`ideation/EVENT.md`
 | T029 | Write the sustainability case with measured numbers | T014 | should-have | 10:30 |
 | T030 | Speak with Argmax text-to-speech instead of the system voice | T026 | stretch | if ahead |
 | T031 | Accessibility pass: VoiceOver labels and large text | T007 | optional | if ahead |
+| T032 | Sync the Mac and iPhone ledgers over Bluetooth | T026 | stretch | if ahead |
 
 **Cut order if behind:** T025, T024, T014 → T021 → T019 → reduce T018 to the one signature transition. Never cut: on-device voice and interpretation, validated amounts, undo, the nudge, the offline proof, honest labels.
 
@@ -629,6 +630,25 @@ There is an accessibility track. A voice-first money app is a natural fit; check
 Done when:
 - [ ] Every control has a VoiceOver label; the yap button, toast, and nudge are announced.
 - [ ] Layout holds at the largest text size.
+
+### [T032] Sync the Mac and iPhone ledgers over Bluetooth
+Area: stretch
+Priority: stretch
+Status: review
+Owner/session: unclaimed
+Timebox: 60 min
+Depends on: T026
+Allowed files: app/YapLater/Services/Sync/, app/YapLater/Domain/, app/YapLater/App/, app/YapLater/Features/Home/
+Relevant contract: ideation/EVENT.md
+GitHub issue: #46
+
+What:
+The owner asked whether the Mac and the iPhone can share data with no internet. A Sync button exchanges the two ledgers over Bluetooth Low Energy: the Mac waits, the iPhone connects, each adds the entries and budgets it lacks. Nothing happens until Sync is tapped on both. Reminders are not synced, because a reminder is only written after an explicit Save on the device that will alert.
+
+Done when:
+- [ ] Merge rules are unit-tested: no duplicates, bad data dropped, an existing budget is not overwritten.
+- [ ] Observed on the real Mac and iPhone with Wi-Fi off: an expense logged on one appears on the other after Sync.
+- [ ] Limits stated: deletions and edits do not propagate.
 
 ## State discipline
 

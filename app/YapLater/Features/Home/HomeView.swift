@@ -14,6 +14,13 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.Space.xl) {
                     header
+                    if let status = model.syncStatus {
+                        Label(status, systemImage: "arrow.triangle.2.circlepath")
+                            .font(Theme.caption)
+                            .foregroundStyle(Theme.inkSoft)
+                            .padding(.horizontal, Theme.Space.xl)
+                            .transition(.opacity)
+                    }
                     hero
                     BudgetStrip(statuses: model.budgetStatuses, highlighted: model.lastBudgetSet?.category) {
                         showingBudgets = true
@@ -59,6 +66,11 @@ struct HomeView: View {
                 .font(Theme.display(22))
                 .foregroundStyle(Theme.ink)
             Spacer()
+            Button { model.startSync() } label: {
+                Chip(text: model.isSyncing ? "Stop" : "Sync", systemImage: "arrow.triangle.2.circlepath")
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(model.isSyncing ? "Stop syncing" : "Sync with your other device over Bluetooth")
             if model.usesMocks {
                 Chip(text: "MOCK", fill: Theme.lemon, foreground: .black)
                     .accessibilityLabel("Mock mode. Speech or the model is a stand-in.")
