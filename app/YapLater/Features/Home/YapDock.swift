@@ -113,7 +113,18 @@ struct YapDock: View {
                     Image(systemName: "exclamationmark.bubble.fill")
                         .font(.system(size: 22, weight: .heavy))
                         .foregroundStyle(Theme.danger)
-                    Text(message).font(Theme.body).foregroundStyle(Theme.ink)
+                    VStack(alignment: .leading, spacing: Theme.Space.s) {
+                        Text(message).font(Theme.body).foregroundStyle(Theme.ink)
+                        if message.contains("in Settings"),
+                           let settings = URL(string: UIApplication.openSettingsURLString) {
+                            // A denied permission can only be changed in Settings; take the user straight there.
+                            Link(destination: settings) {
+                                Label("Open Settings", systemImage: "gear")
+                                    .font(Theme.caption)
+                                    .foregroundStyle(Theme.brand)
+                            }
+                        }
+                    }
                     Spacer(minLength: 0)
                     Button("Dismiss", systemImage: "xmark") { model.dismissFailure() }
                         .labelStyle(.iconOnly)
