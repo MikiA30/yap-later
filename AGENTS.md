@@ -2,7 +2,7 @@
 
 ## Scope and current state
 
-This is **Yap Later** (first called VocaLedger; the local folder keeps that name): a voice-first, fully local expense tracker for iPhone. You say "just spent like $50 on groceries"; on-device speech and an on-device model log it, categorize it, and check it against a weekly budget, with a nudge when a budget runs low. No bank login, no account, no network. The authoritative product description is `.plans/yap-later-spec.md` (interviewed 2026-11-15). Target device: the user's iPhone 17 Pro. **Deadline: 8:30 AM EST, November 15, 2026.**
+This is **Yap Later** (first called VocaLedger; the local folder keeps that name): a voice-first, fully local expense tracker for iPhone. You say "just spent like $50 on groceries"; on-device speech and an on-device model log it, categorize it, and check it against a weekly budget, with a nudge when a budget runs low. No bank login, no account, no network. The authoritative product description is `.plans/yap-later-spec.md` (interviewed 2026-11-15). Target device: the user's iPhone 17 Pro. **Deadline: noon EST, November 15, 2026** (kickoff deck, see `ideation/EVENT.md`; the earlier 8:30 AM target was the user's own). The rules also require that it runs on a Mac with Wi-Fi off, and a video of at most 2 minutes plus a GitHub link.
 
 The project began as a reminders app; the user pivoted it to money-first during the interview. Bill reminders and location nudges are stretch. Where older docs (`docs/PLAN.md`, `docs/ARCHITECTURE.md`, `docs/CONTRACTS.md`, `docs/DEMO.md`, `ideation/PROJECT_BRIEF.md`) still describe the reminders flow, the spec and `docs/TICKETS.md` win until those docs are rewritten.
 
