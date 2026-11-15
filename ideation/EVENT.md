@@ -10,6 +10,28 @@ The organizer-shared samples are https://github.com/iBrushC/local-ai-hackathon-s
 
 Ask the sponsor: “Do you have a working Swift/Xcode iPhone sample for Bonsai 2 2B or 4B, and which exact model file and runtime version should I use?” An answer here can resolve the largest implementation risk.
 
+## Kickoff deck (received 2026-11-15 08:20 EST, "Local AI Hackathon Kickoff", Cornell Commons)
+
+[Evidence] from the organizers' slides:
+
+| Topic | What the deck says |
+|---|---|
+| Deadline | Submissions close at exactly noon, 11/15. Finalist live demos 12:30; winners 14:00 |
+| Stack | Must use Bonsai (2B/4B/9B) and Argmax to some capacity |
+| Compatibility | Must run on Mac with WiFi turned off |
+| Teams | Max 2 people per group |
+| Format | Submit a video (max 2 mins) and a GitHub link |
+| Theme | "Recreate": remake existing AI apps fully on-device; "When might someone need your tool and not have access to the internet?" |
+| Assessment | 1 Use of Bonsai/Argmax, 2 Creativity, 3 Wow factor, 4 Technical impressiveness |
+| Main track | Chosen by PrismML and Argmax: first M6 Mac Minis, second $350 per person, third $100 per person |
+| Accessibility track | Best accessibility/computer-use project, chosen by LM Studio |
+| Sustainability track | Cornell Sustainable Computing Working Group; right-sized inference, fewer calls, plain code where AI is not needed |
+| Subtracks ($100 each) | Judges' Choice (two), and Locally Made: coded entirely with local AI models. Yap Later does not qualify for Locally Made and does not claim it |
+
+[Unverified] Whether an iPhone app that also runs on a Mac satisfies "must run on Mac", where the video and link are submitted, and whether the repo must be public. Ask in the event Discord if unsure.
+
+The table below is the earlier list of open questions, kept for history; the deck answers the first, second, fifth and part of the sixth.
+
 | Question | Answer/source/date |
 |---|---|
 | Actual submission cutoff and demo length | Unconfirmed |

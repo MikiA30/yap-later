@@ -1,6 +1,6 @@
 # Yap Later tickets
 
-Status as of 2026-11-15 04:35 EST: the core loop works on the iPhone with Bonsai 2 4B and WhisperKit; the airplane-mode acceptance (T011) is next. Revised 2026-11-15 03:35 EST after the interview (`.plans/yap-later-spec.md`): **voice-first, fully local expense tracker; deadline 8:30 AM today.** No implementation is complete. GitHub issues in `MikiA30/yap-later` mirror these tickets (key T0NN = issue #NN for T001–T023); this file is the source of dependencies and done-when criteria.
+Status as of 2026-11-15 08:30 EST: the kickoff deck arrived (`ideation/EVENT.md`). **Submission closes at noon; it must run on a Mac with Wi-Fi off; video max 2 minutes plus a GitHub link; theme "Recreate".** T026 to T031 cover the gaps. The iPhone loop, reminders, ramble, the airplane-mode run and the locked-phone nudge all work on the device. GitHub issues in `MikiA30/yap-later` mirror these tickets; this file is the source of dependencies and done-when criteria.
 
 **Order.** Device shell → speech and model gates in parallel with pure-Swift domain work → store and UI → integrated voice loop → motion → offline acceptance → judge materials. **Feature freeze 07:15.** Bonsai hard stop **05:15**, then T016 locks the interpreter.
 
@@ -33,6 +33,12 @@ Status as of 2026-11-15 04:35 EST: the core loop works on the iPhone with Bonsai
 | T024 | Bill reminders by voice | T011 | stretch | after 8:30 |
 | T025 | Location nudges near frequent merchants | T011 | stretch | after 8:30 |
 | T014 | Compare supported Bonsai variants | T011 | optional | after 8:30 |
+| T026 | Run on a Mac with Wi-Fi turned off | T009 | must-have | 09:45 |
+| T027 | Fit the pitch and video to the rules: 2 minutes and the Recreate theme | T011 | must-have | 10:00 |
+| T028 | Make the repo ready to share with judges | T022 | must-have | 10:15 |
+| T029 | Write the sustainability case with measured numbers | T014 | should-have | 10:30 |
+| T030 | Speak with Argmax text-to-speech instead of the system voice | T026 | stretch | if ahead |
+| T031 | Accessibility pass: VoiceOver labels and large text | T007 | optional | if ahead |
 
 **Cut order if behind:** T025, T024, T014 → T021 → T019 → reduce T018 to the one signature transition. Never cut: on-device voice and interpretation, validated amounts, undo, the nudge, the offline proof, honest labels.
 
@@ -79,7 +85,7 @@ Done when:
 ### [T003] Prove the budget nudge notification offline
 Area: notifications
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T001
@@ -231,7 +237,7 @@ Done when:
 ### [T011] Run full real-device offline acceptance
 Area: acceptance
 Priority: must-have
-Status: ready
+Status: integrated
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T010
@@ -307,7 +313,7 @@ Done when:
 ### [T015] Confirm event rules, judging, and sponsor iOS path
 Area: event
 Priority: must-have
-Status: ready
+Status: integrated
 Owner/session: user
 Timebox: 15 min
 Depends on: none
@@ -402,7 +408,7 @@ Done when:
 ### [T020] Prove WhisperKit transcription offline on the iPhone
 Area: speech
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 40 min
 Depends on: T001
@@ -512,6 +518,117 @@ Done when:
 - [ ] Opt-in permission flow; region monitoring entirely on the device.
 - [ ] Nudge observed on the device with real numbers.
 - [ ] Battery and privacy behavior explained in the README.
+
+### [T026] Run on a Mac with Wi-Fi turned off
+Area: foundation
+Priority: must-have
+Status: ready
+Owner/session: unclaimed
+Timebox: 60 min
+Depends on: T009
+Allowed files: app/, scripts/, README.md, docs/COMMANDS.md
+Relevant contract: ideation/EVENT.md
+GitHub issue: #35
+
+What:
+The kickoff rules say the submission "must run on Mac with WiFi turned off". Yap Later is iPhone-only today. Make the same app build and run on an Apple Silicon Mac, with Bonsai and WhisperKit running on the Mac, and document how a judge builds it.
+
+Done when:
+- [ ] The app builds for macOS from the command line without an Apple developer account.
+- [ ] On the Mac with Wi-Fi off: a spoken or typed expense is interpreted by Bonsai and saved; the header shows the real model, not MOCK.
+- [ ] README has the Mac build and model-provisioning steps.
+
+### [T027] Fit the pitch and video to the rules: 2 minutes and the Recreate theme
+Area: demo
+Priority: must-have
+Status: ready
+Owner/session: unclaimed
+Timebox: 20 min
+Depends on: T011
+Allowed files: docs/PITCH.md, README.md
+Relevant contract: ideation/EVENT.md
+GitHub issue: #36
+
+What:
+The video is capped at 2 minutes and the theme is "Recreate": remake an existing AI app fully on-device, and play into when someone has no internet. Judging: use of Bonsai/Argmax, creativity, wow factor, technical impressiveness. The current script runs 2.5 minutes and does not name the app it recreates.
+
+Done when:
+- [ ] Script fits in 2:00 and opens with the cloud budgeting app it recreates on-device.
+- [ ] Shows Wi-Fi off, names Bonsai and Argmax on screen or in voice, and covers each judging criterion.
+- [ ] README intro uses the same framing.
+
+### [T028] Make the repo ready to share with judges
+Area: submission
+Priority: must-have
+Status: ready
+Owner/session: unclaimed
+Timebox: 15 min
+Depends on: T022
+Allowed files: README.md, LICENSE, .gitignore
+Relevant contract: ideation/EVENT.md
+GitHub issue: #37
+
+What:
+The submission is a video plus a GitHub link, so judges must be able to open the repo. It is private today. Check the history for anything that should not be public, then the owner flips visibility.
+
+Done when:
+- [ ] No credentials, model weights, provisioning profiles, or personal data in the Git history.
+- [ ] LICENSE and third-party attributions present.
+- [ ] The owner makes the repo public (or shares it as the organizers ask) before submitting.
+
+### [T029] Write the sustainability case with measured numbers
+Area: submission
+Priority: should-have
+Status: ready
+Owner/session: unclaimed
+Timebox: 20 min
+Depends on: T014
+Allowed files: README.md, docs/
+Relevant contract: ideation/EVENT.md
+GitHub issue: #38
+
+What:
+There is a sustainability track judged on right-sized inference: small models, fewer calls, plain code where a model is not needed. Yap Later already does this (ternary 2B/4B comparison, grammar-limited output, cached prompt prefix, validation and date math in code). Write it up with the measurements we have and label what was not measured (energy).
+
+Done when:
+- [ ] A short README section with the measured model sizes, tokens per request, and latencies.
+- [ ] Nothing claimed about energy that was not measured.
+
+### [T030] Speak with Argmax text-to-speech instead of the system voice
+Area: speech
+Priority: stretch
+Status: ready
+Owner/session: unclaimed
+Timebox: 60 min
+Depends on: T026
+Allowed files: app/YapLater/Services/Speech/, app/YapLater.xcodeproj/
+Relevant contract: ideation/EVENT.md
+GitHub issue: #39
+
+What:
+Argmax also ships on-device text-to-speech. Using it for questions and nudges would deepen the sponsor use and replace the robotic system voice the owner noticed. Only if the Mac requirement and the video are done.
+
+Done when:
+- [ ] Questions and nudges are spoken by an Argmax voice on the device, offline, with the system voice as fallback.
+- [ ] Latency to first audio recorded.
+
+### [T031] Accessibility pass: VoiceOver labels and large text
+Area: ui
+Priority: optional
+Status: ready
+Owner/session: unclaimed
+Timebox: 30 min
+Depends on: T007
+Allowed files: app/YapLater/Features/, app/YapLater/DesignSystem/
+Relevant contract: ideation/EVENT.md
+GitHub issue: #40
+
+What:
+There is an accessibility track. A voice-first money app is a natural fit; check that the screens are usable with VoiceOver and large text before claiming it.
+
+Done when:
+- [ ] Every control has a VoiceOver label; the yap button, toast, and nudge are announced.
+- [ ] Layout holds at the largest text size.
 
 ## State discipline
 
