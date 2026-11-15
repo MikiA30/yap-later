@@ -447,7 +447,7 @@ Done when:
 ### [T022] Write the judge-facing README
 Area: submission
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 15 min
 Depends on: T009
@@ -466,7 +466,7 @@ Done when:
 ### [T023] Record the demo video and write the pitch
 Area: submission
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: user + Claude
 Timebox: 20 min
 Depends on: T011
@@ -523,7 +523,7 @@ Done when:
 ### [T026] Run on a Mac with Wi-Fi turned off
 Area: foundation
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 60 min
 Depends on: T009
@@ -634,7 +634,7 @@ Done when:
 ### [T032] Sync the Mac and iPhone ledgers over Bluetooth
 Area: stretch
 Priority: stretch
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 60 min
 Depends on: T026
