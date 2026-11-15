@@ -9,6 +9,8 @@ All gates begin **NOT RUN**. A compiled simulator build, Mac model response, or 
 | G2: nudge notification | T003 | Permission prompt and in-app spoken nudge seen by the user; a notification on the locked phone has not been observed | NOT RUN |
 | G3: full offline loop | T011 | Cold launch in airplane mode with the Mac unplugged, full demo script | NOT RUN |
 | G4: on-device speech | T020 | WhisperKit 1.1.1, openai_whisper-small copied to the phone; live yaps by the user transcribed in 0.25 to 0.85 s; number-word prompt verified with synthetic speech and the user's voice. The phone was online | **PASS on device; offline run pending (G3)** |
+| Reminders (T024) | T024 | Spoken reminder on the iPhone, 2026-11-15 about 07:55 EST: the card appeared, Save wrote it, and the user saw it in the Reminders app with its alert set. The phone was online. Delivery of the alert at its time was not recorded | **PASS on device (creation); alert delivery not observed** |
+| Ramble (T021) | T021 | Four test rambles (9 parts) run through Bonsai 2 4B on the iPhone via the debug probe: every part read correctly. Not yet tried with a live voice | **PASS on device (typed probe); live voice NOT RUN** |
 | G1-fallback: Foundation Models | T016 | Compiles and is wired as a labeled fallback; not exercised on the phone because Bonsai is present | NOT RUN |
 
 Findings worth keeping:

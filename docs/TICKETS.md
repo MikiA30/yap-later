@@ -497,7 +497,7 @@ Done when:
 ### [T025] Location nudges near frequent merchants
 Area: stretch
 Priority: stretch
-Status: queued
+Status: queued (not built: needs a location permission and a walk-around test that could not be done before the deadline; first in the cut order)
 Owner/session: unclaimed
 Timebox: after 8:30
 Depends on: T011
