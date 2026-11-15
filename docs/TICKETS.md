@@ -57,7 +57,7 @@ Timebox: 60 min
 Depends on: none
 Allowed files: app/, docs/COMMANDS.md, docs/FEASIBILITY.md, .gitignore
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #1
 
 What:
 Create `app/YapLater.xcodeproj` (SwiftUI, iOS 26 deployment target, display name "Yap Later"), the folder boundaries in docs/ARCHITECTURE.md, typed input, a visibly labeled MOCK draft preview, edit, and cancel. Run `/skeleton`.
@@ -76,7 +76,7 @@ Timebox: hard stop 06:30 EST, then T016 decides
 Depends on: T001
 Allowed files: spikes/model/, app/YapLater/Services/Inference/, app/YapLater.xcodeproj/, docs/FEASIBILITY.md, docs/DECISIONS.md, docs/COMMANDS.md
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #2
 
 What:
 Use sponsor-supported iOS code if T015 finds it; otherwise try the exact Bonsai 2 2B or 4B artifact in-process (MLX Swift or llama.cpp, whichever has demonstrated support for that checkpoint). Text-only use.
@@ -96,7 +96,7 @@ Timebox: 45 min
 Depends on: T001
 Allowed files: spikes/reminders/, app/YapLater/Services/Reminders/, app/YapLater.xcodeproj/, docs/FEASIBILITY.md, docs/COMMANDS.md
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #3
 
 What:
 Create a hardcoded one-minute reminder through EventKit, independent of the model.
@@ -115,7 +115,7 @@ Timebox: 30 min
 Depends on: T001
 Allowed files: contracts/, eval/requests.json, app/YapLater/Domain/, app/YapLaterTests/, docs/CONTRACTS.md
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #4
 
 What:
 Turn the proposed schema, request clock, draft revision, confirmation, receipt, and errors into shared Swift types.
@@ -134,7 +134,7 @@ Timebox: 45 min
 Depends on: T004, T016
 Allowed files: app/YapLater/Services/Inference/, app/YapLaterTests/, eval/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #5
 
 What:
 Replace mock interpretation with the interpreter locked in T016, producing bounded structured output.
@@ -153,7 +153,7 @@ Timebox: 60 min
 Depends on: T004
 Allowed files: app/YapLater/Services/Validation/, app/YapLater/Domain/, app/YapLaterTests/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #6
 
 What:
 Resolve and validate reminder drafts in deterministic code, independent of the model.
@@ -172,7 +172,7 @@ Timebox: 60 min
 Depends on: T004, T017
 Allowed files: app/YapLater/Features/, app/YapLaterTests/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #7
 
 What:
 Typed input, focused clarification, and an editable confirmation card built on the T017 tokens, using mock services until adapters land. Load the `swiftui-motion` skill.
@@ -191,7 +191,7 @@ Timebox: 45 min
 Depends on: T003, T004
 Allowed files: app/YapLater/Services/Reminders/, app/YapLaterTests/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #8
 
 What:
 Replace the reminder probe with a repository that accepts only confirmed, validated drafts.
@@ -210,7 +210,7 @@ Timebox: 45 min
 Depends on: T005, T006, T007, T008
 Allowed files: app/YapLater/App/, app/YapLater/Domain/, app/YapLaterTests/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #9
 
 What:
 Wire real inference, validation, review, and reminders through the agreed state machine. Remove the mock from the default path.
@@ -229,7 +229,7 @@ Timebox: 45 min
 Depends on: T009
 Allowed files: app/YapLater/Domain/, app/YapLater/Services/, app/YapLaterTests/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #10
 
 What:
 Harden failure recovery and local save intent and receipt handling.
@@ -248,7 +248,7 @@ Timebox: 30 min
 Depends on: T010
 Allowed files: eval/, docs/FEASIBILITY.md, docs/COMMANDS.md, docs/PREPARATION.md
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #11
 
 What:
 Measure the cold and warm full pipeline with the Mac disconnected and networking off.
@@ -267,7 +267,7 @@ Timebox: 45 min
 Depends on: T009, T020
 Allowed files: app/YapLater/Services/Speech/, app/YapLater/Features/Capture/, app/YapLaterTests/, eval/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #12
 
 What:
 Hold-to-talk capture transcribed on the phone with the T020 WhisperKit setup, feeding the same request flow.
@@ -286,7 +286,7 @@ Timebox: 25 min
 Depends on: T011, T022, T023
 Allowed files: docs/DEMO.md, README.md, docs/PREPARATION.md, eval/results/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #13
 
 What:
 Run the live demo twice end to end, then submit before the confirmed cutoff.
@@ -305,7 +305,7 @@ Timebox: after submission
 Depends on: T011
 Allowed files: spikes/model/, eval/, docs/DECISIONS.md
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #14
 
 What:
 Compare another compatible model on the same device and corpus.
@@ -324,7 +324,7 @@ Timebox: 20 min
 Depends on: none
 Allowed files: ideation/EVENT.md, docs/DECISIONS.md, docs/PLAN.md, docs/TICKETS.md
 Relevant contract: none
-GitHub issue: pending
+GitHub issue: #15
 
 What:
 Get the facts that decide what "winning" requires. The user asks organizers and sponsors; Claude records the answers.
@@ -344,7 +344,7 @@ Timebox: 30 min (decision at 06:30; fallback build up to 60 min)
 Depends on: T002
 Allowed files: app/YapLater/Services/Inference/, app/YapLater.xcodeproj/, docs/DECISIONS.md, docs/FEASIBILITY.md
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #16
 
 What:
 Decide the interpreter behind one `ReminderInterpreter` protocol. If G1 passed, lock Bonsai. If not, implement the fallback: Apple's on-device Foundation Models framework (iOS 26, runs on iPhone 17 Pro without network when Apple Intelligence is enabled) with guided structured output. Either way, it runs on the phone.
@@ -363,7 +363,7 @@ Timebox: 45 min
 Depends on: T001
 Allowed files: app/YapLater/DesignSystem/, app/YapLater/Assets.xcassets/, docs/DESIGN.md
 Relevant contract: .claude/skills/swiftui-motion/SKILL.md
-GitHub issue: pending
+GitHub issue: #17
 
 What:
 A small, specific identity so the app doesn't look generated: palette (light and dark), type scale, spacing, corner radii, the `Motion` tokens from the skill, app icon, and launch screen. One-page docs/DESIGN.md with the rationale.
@@ -382,7 +382,7 @@ Timebox: 60 min
 Depends on: T007, T017
 Allowed files: app/YapLater/Features/, app/YapLater/DesignSystem/
 Relevant contract: .claude/skills/swiftui-motion/SKILL.md
-GitHub issue: pending
+GitHub issue: #18
 
 What:
 The moments judges remember, following the `swiftui-motion` skill: the typed (or spoken) request morphs into the confirmation card (`matchedGeometryEffect`); a calm, honest thinking state; changed fields animate with `numericText` during clarification; Save success (symbol replace + `.sensoryFeedback(.success)`) only after EventKit confirms.
@@ -401,7 +401,7 @@ Timebox: 40 min
 Depends on: T008, T017
 Allowed files: app/YapLater/Features/Onboarding/, app/YapLater/Features/, app/YapLater/App/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #19
 
 What:
 A two- or three-screen first run explaining what Yap Later does and that everything stays on the phone, priming Reminders (and microphone, if voice) before the system prompt. A small persistent "On-device" indicator that is true: it reflects that interpretation ran locally, not just network state.
@@ -420,7 +420,7 @@ Timebox: 60 min
 Depends on: T001
 Allowed files: spikes/speech/, app/YapLater/Services/Speech/, app/YapLater.xcodeproj/, docs/FEASIBILITY.md, docs/COMMANDS.md
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #20
 
 What:
 Add Argmax's WhisperKit Swift package (a hackathon sponsor) and transcribe a spoken reminder on the phone, offline. ket-lite measured WhisperKit small on the Mac (1% word error, 0.5 s resident); the phone is untested.
@@ -439,7 +439,7 @@ Timebox: after submission unless the core is done early
 Depends on: T011
 Allowed files: app/YapLater/, app/YapLaterTests/, contracts/, eval/
 Relevant contract: docs/CONTRACTS.md
-GitHub issue: pending
+GitHub issue: #21
 
 What:
 Let one long ramble produce a stack of draft reminders, each reviewed and saved individually with the same rules.
@@ -458,7 +458,7 @@ Timebox: 30 min
 Depends on: T009
 Allowed files: README.md, docs/, LICENSE
 Relevant contract: none
-GitHub issue: pending
+GitHub issue: #22
 
 What:
 A README a judge can read in two minutes: the problem, a GIF or screenshots, how it works (diagram: input → on-device model → validation → your confirmation → Apple Reminders), why it is private and offline, sponsor tech used, measured results, honest limitations, and build steps.
@@ -477,7 +477,7 @@ Timebox: 35 min
 Depends on: T011
 Allowed files: docs/DEMO.md, docs/PITCH.md
 Relevant contract: none
-GitHub issue: pending
+GitHub issue: #23
 
 What:
 A pitch script that fits the confirmed demo length (problem → live demo in airplane mode → how it works → what's next) and a backup screen recording of the real offline flow.
