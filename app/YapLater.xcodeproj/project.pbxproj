@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AA0000000000000000000100 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000101 /* WhisperKit */; };
+		AA0000000000000000000104 /* TTSKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000103 /* TTSKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000000000000000000100 /* WhisperKit in Frameworks */,
+				AA0000000000000000000104 /* TTSKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +99,7 @@
 			name = YapLater;
 			packageProductDependencies = (
 				AA0000000000000000000101 /* WhisperKit */,
+				AA0000000000000000000103 /* TTSKit */,
 			);
 			productName = YapLater;
 			productReference = AA0000000000000000000030 /* YapLater.app */;
@@ -463,6 +466,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AA0000000000000000000102 /* XCRemoteSwiftPackageReference "argmax-oss-swift" */;
 			productName = WhisperKit;
+		};
+		AA0000000000000000000103 /* TTSKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000102 /* XCRemoteSwiftPackageReference "argmax-oss-swift" */;
+			productName = TTSKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

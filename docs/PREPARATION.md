@@ -9,8 +9,8 @@
 | 2026-11-15 | Rename to Yap Later; rebuild the backlog as 23 timed tickets (added T015–T023: rules, interpreter fallback, design identity, signature motion, onboarding, WhisperKit, brain dump, README, video/pitch); create private GitHub repo `MikiA30/yap-later` with labels, milestone, and one issue per ticket | Claude Code (Opus 5.5); `gh` CLI | Planning and tracker only; no app code, device test, or model run |
 | Next | Focused interview and kickoff review | User + chosen coding tool | Pending |
 | Next | Physical-device shell, model proof, reminder proof | Actual device and runtime | NOT RUN |
+| 2026-11-15 | Build the app: iPhone and Mac targets, WhisperKit speech, Bonsai 2 via llama.cpp, validation, budgets, nudges, reminders, ramble, tests, README, pitch, and tickets from the kickoff deck | Claude Code; Xcode 26.6; `gh` CLI; the user's live tests on the iPhone | Device and Mac results are in `docs/FEASIBILITY.md`; written with cloud AI assistance, so not eligible for the Locally Made subtrack |
 
 The ket-lite application, measurements, GitHub issues, and completed milestones were not carried into this fresh app. Reused material is the workflow pattern, original interview skill, and relevant conversation facts. This record does not establish event eligibility.
 
 Append substantive code/model/device work with its tool, date, revision, result, and evidence. Keep failed experiments and assumptions distinct from successful measured behavior.
-| 2026-11-15 | Build the app: iPhone and Mac targets, WhisperKit speech, Bonsai 2 via llama.cpp, validation, budgets, nudges, reminders, ramble, tests, README, pitch, and tickets from the kickoff deck | Claude Code; Xcode 26.6; `gh` CLI; the user's live tests on the iPhone | Device and Mac results are in `docs/FEASIBILITY.md`; written with cloud AI assistance, so not eligible for the Locally Made subtrack |
