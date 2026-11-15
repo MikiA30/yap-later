@@ -1,5 +1,7 @@
 # Yap Later operating plan
 
+> **Superseded in part (2026-11-15 03:35):** the product pivoted to a voice-first local expense tracker. `.plans/yap-later-spec.md` and `docs/TICKETS.md` are authoritative; this file still describes the earlier reminders flow until its ticket rewrites it.
+
 ## Goal
 
 Deliver one reliable offline iPhone loop: request → reviewed reminder → actual system alert. Review this draft during `/kickoff`; no application behavior has been implemented here.

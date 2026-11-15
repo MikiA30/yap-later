@@ -1,5 +1,7 @@
 # Architecture — proposal pending kickoff
 
+> **Superseded in part (2026-11-15 03:35):** the product pivoted to a voice-first local expense tracker. `.plans/yap-later-spec.md` and `docs/TICKETS.md` are authoritative; this file still describes the earlier reminders flow until its ticket rewrites it.
+
 One native iOS app, with boundaries expressed as Swift protocols. The phone owns inference, validation, UI, and reminder writes. Do not create a Python engine or a Mac-hosted server.
 
 | Proposed path | Responsibility | Initial owner |

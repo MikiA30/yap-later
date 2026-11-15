@@ -1,492 +1,518 @@
 # Yap Later tickets
 
-Reviewed backlog, 2026-11-15 03:00 EST. No implementation is complete. GitHub issues in `MikiA30/yap-later` mirror these tickets; this file stays the source of dependencies and done-when criteria. Local keys (T001…) are stable; each ticket records its mapped issue number.
+Revised 2026-11-15 03:35 EST after the interview (`.plans/yap-later-spec.md`): **voice-first, fully local expense tracker; deadline 8:30 AM today.** No implementation is complete. GitHub issues in `MikiA30/yap-later` mirror these tickets (key T0NN = issue #NN for T001–T023); this file is the source of dependencies and done-when criteria.
 
-**Clock.** [Proposal] Targets assume the last known submission cutoff, **Sunday Nov 15, 12:00 EST** (unconfirmed for this pivot; T015 confirms it). If the cutoff moves, shift the targets, not the order.
-
-**Order.** Risk first: device shell → model gate and reminder gate in parallel → contracts and validation → integrated typed loop → identity and motion → offline acceptance → judge materials → submit. Voice (Argmax, a sponsor) runs as a parallel lane once the shell exists. The name "Yap Later" suggests voice; whether voice is required for the demo is a user decision (see T012).
+**Order.** Device shell → speech and model gates in parallel with pure-Swift domain work → store and UI → integrated voice loop → motion → offline acceptance → judge materials. **Feature freeze 07:15.** Bonsai hard stop **05:15**, then T016 locks the interpreter.
 
 ## Summary
 
 | Key | Task | Depends on | Priority | Target (EST) |
 |---|---|---|---|---|
-| T015 | Confirm event rules, cutoff, judging, and sponsor iOS path | none | must-have | 03:30 |
-| T001 | Create the signed iPhone shell and mock review flow | none | must-have | 04:15 |
-| T004 | Finalize domain contracts and synthetic fixtures | T001 | must-have | 04:45 |
-| T003 | Prove an Apple Reminder alarm offline | T001 | must-have | 05:15 |
-| T017 | Establish the visual identity and design tokens | T001 | must-have | 05:30 |
-| T020 | Prove Argmax WhisperKit transcription offline on the iPhone | T001 | should-have | 06:00 |
-| T006 | Implement date resolution and proposal validation | T004 | must-have | 06:00 |
-| T002 | Prove a supported Bonsai model on the actual iPhone | T001 | must-have | 06:30 (hard stop) |
-| T008 | Implement the EventKit reminder repository | T003, T004 | must-have | 06:15 |
-| T007 | Build capture, clarification, and editable review | T004, T017 | must-have | 06:45 |
-| T016 | Lock the on-device interpreter (Bonsai or fallback) | T002 | must-have | 07:00 |
-| T005 | Implement local request interpretation | T004, T016 | must-have | 07:45 |
-| T009 | Connect the complete typed reminder loop | T005, T006, T007, T008 | must-have | 08:30 |
-| T010 | Handle retries, lifecycle, and duplicate saves | T009 | must-have | 09:15 |
-| T018 | Build the signature transitions and motion | T007, T017 | should-have | 09:45 |
-| T019 | Add first-run onboarding, permission priming, and the offline badge | T008, T017 | should-have | 09:45 |
-| T012 | Add offline push-to-talk ("yap") input | T009, T020 | should-have | 10:00 |
-| T011 | Run full real-device offline acceptance | T010 | must-have | 10:30 |
-| T022 | Write the judge-facing README and make the repo submission-ready | T009 | must-have | 10:45 |
-| T023 | Record the demo video and write the pitch | T011 | must-have | 11:15 |
-| T013 | Rehearse and submit | T011, T022, T023 | must-have | 11:40 |
-| T014 | Compare supported 2B and 4B variants | T011 | optional | after submit |
-| T021 | Brain dump: several reminders from one ramble | T011 | optional | after submit |
+| T015 | Confirm event rules, judging, and sponsor iOS path | none | must-have | 04:00 |
+| T001 | Create the signed iPhone shell with a labeled mock yap flow | none | must-have | 04:15 |
+| T004 | Define the money contracts and fixtures | T001 | must-have | 04:30 |
+| T017 | Establish the playful, bold visual identity | T001 | must-have | 04:45 |
+| T006 | Validate proposals and compute weekly budgets | T004 | must-have | 05:00 |
+| T020 | Prove WhisperKit transcription offline on the iPhone | T001 | must-have | 05:00 |
+| T002 | Prove a supported Bonsai model on the actual iPhone | T001 | must-have | 05:15 (hard stop) |
+| T008 | Store entries and budgets locally with undo | T004 | must-have | 05:15 |
+| T016 | Lock the on-device interpreter (Bonsai or fallback) | T002 | must-have | 05:30 |
+| T003 | Prove the budget nudge notification offline | T001 | must-have | 05:30 |
+| T007 | Build the yap, ledger, and budget screens | T004, T017 | must-have | 05:45 |
+| T005 | Implement on-device money interpretation | T004, T016 | must-have | 06:00 |
+| T012 | Add hold-to-talk and voice ask-back | T007, T020 | must-have | 06:15 |
+| T009 | Connect the complete voice-to-budget loop | T003, T005, T006, T008, T012 | must-have | 06:30 |
+| T010 | Handle undo, edits, retries, and duplicates | T009 | must-have | 06:50 |
+| T018 | Build the signature transitions and motion | T007, T017 | must-have | 07:10 |
+| T019 | Start a yap from the Action Button | T009 | should-have | 07:15 |
+| T011 | Run full real-device offline acceptance | T010 | must-have | 07:35 |
+| T022 | Write the judge-facing README | T009 | must-have | 07:50 |
+| T023 | Record the demo video and write the pitch | T011 | must-have | 08:10 |
+| T013 | Pre-log the demo week, rehearse, and submit | T011, T022, T023 | must-have | 08:25 |
+| T021 | Ramble: several entries from one yap | T011 | should-have | if ahead |
+| T024 | Bill reminders by voice | T011 | stretch | after 8:30 |
+| T025 | Location nudges near frequent merchants | T011 | stretch | after 8:30 |
+| T014 | Compare supported Bonsai variants | T011 | optional | after 8:30 |
 
-**Feature freeze: 10:00.** After that, only fixes, acceptance, and submission materials.
-
-**Lanes for parallel sessions** (only after T001 and T004 land; one Xcode-project owner at a time, see AGENTS.md):
-
-- Lane A (integration owner): T001 → T004 → T006 → T016 → T005 → T009 → T010 → T011
-- Lane B (device gates): T003 → T008, then T002 (model gate)
-- Lane C (design): T017 → T007 → T018 → T019
-- Lane D (voice, optional): T020 → T012
-- Human: T015 now; device checks in T001/T002/T003/T011; T023 recording; T013 submit.
-
-**Cut order if behind:** T021, T014 → T012 voice → T019 onboarding (keep a plain permission prompt) → T018 motion (keep T017 tokens and one transition) → never cut confirmation, validation, honest labels, or the offline proof.
+**Cut order if behind:** T025, T024, T014 → T021 → T019 → reduce T018 to the one signature transition. Never cut: on-device voice and interpretation, validated amounts, undo, the nudge, the offline proof, honest labels.
 
 ## Tickets
 
-### [T001] Create the signed iPhone shell and mock review flow
+### [T001] Create the signed iPhone shell with a labeled mock yap flow
 Area: foundation
 Priority: must-have
 Status: ready
 Owner/session: unclaimed
-Timebox: 60 min
+Timebox: 40 min
 Depends on: none
 Allowed files: app/, docs/COMMANDS.md, docs/FEASIBILITY.md, .gitignore
-Relevant contract: docs/CONTRACTS.md
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #1
 
 What:
-Create `app/YapLater.xcodeproj` (SwiftUI, iOS 26 deployment target, display name "Yap Later"), the folder boundaries in docs/ARCHITECTURE.md, typed input, a visibly labeled MOCK draft preview, edit, and cancel. Run `/skeleton`.
+Create `app/YapLater.xcodeproj` (SwiftUI, iOS 26, display name "Yap Later", Personal Team signing), the folder layout from the spec's architecture, and a visibly labeled MOCK flow: tap the yap button → mock transcript → mock expense card → appears in a list.
 
 Done when:
-- [ ] Builds and launches on the user's iPhone 17 Pro from Xcode; signing team, bundle ID, iOS version, and exact build/run/test commands recorded in docs/COMMANDS.md.
-- [ ] Mock request → preview → edit → Cancel works; the mock is labeled on screen; no EventKit write exists yet.
-- [ ] A unit-test target runs (`xcodebuild test` on a simulator); G0 recorded in docs/FEASIBILITY.md.
+- [ ] Builds and launches on the user's iPhone 17 Pro; team, bundle ID, iOS version, and exact build/run/test commands recorded in docs/COMMANDS.md.
+- [ ] The mock flow works and is labeled MOCK on screen.
+- [ ] A unit-test target runs on a simulator; G0 recorded in docs/FEASIBILITY.md.
 
 ### [T002] Prove a supported Bonsai model on the actual iPhone
 Area: inference
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: hard stop 06:30 EST, then T016 decides
+Timebox: hard stop 05:15 EST, then T016 decides
 Depends on: T001
 Allowed files: spikes/model/, app/YapLater/Services/Inference/, app/YapLater.xcodeproj/, docs/FEASIBILITY.md, docs/DECISIONS.md, docs/COMMANDS.md
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #2
 
 What:
-Use sponsor-supported iOS code if T015 finds it; otherwise try the exact Bonsai 2 2B or 4B artifact in-process (MLX Swift or llama.cpp, whichever has demonstrated support for that checkpoint). Text-only use.
+Run the exact Bonsai 2 2B or 4B artifact in-process (sponsor iOS code if T015 finds it; otherwise MLX Swift or llama.cpp, whichever has demonstrated support for that checkpoint) on "just spent like fifty bucks on groceries at Walmart".
 
 Done when:
 - [ ] Model ID, revision, quantization, file size, and runtime version recorded; a Mac or LM Studio response does not count.
-- [ ] Real output on the iPhone with Wi-Fi and cellular off; cold and warm latency, and memory where measurable.
-- [ ] Five repeated short requests and one cancellation; whether thinking can be disabled and whether JSON lands in the normal output field (ket-lite saw it in the reasoning field on the Mac) recorded.
-- [ ] G1 marked PASS, FAIL, or BLOCKED by 06:30 with evidence; no silent fallback.
+- [ ] Real JSON output on the iPhone with Wi-Fi and cellular off; cold and warm latency, memory where measurable.
+- [ ] G1 marked PASS, FAIL, or BLOCKED by 05:15 with evidence; no silent fallback.
 
-### [T003] Prove an Apple Reminder alarm offline
-Area: reminders
+### [T003] Prove the budget nudge notification offline
+Area: notifications
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 45 min
+Timebox: 20 min
 Depends on: T001
-Allowed files: spikes/reminders/, app/YapLater/Services/Reminders/, app/YapLater.xcodeproj/, docs/FEASIBILITY.md, docs/COMMANDS.md
-Relevant contract: docs/CONTRACTS.md
+Allowed files: app/YapLater/Services/Notifications/, app/YapLater.xcodeproj/, docs/FEASIBILITY.md
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #3
 
 What:
-Create a hardcoded one-minute reminder through EventKit, independent of the model.
+Request notification permission and post a local notification ("Only $50 left for Groceries this week") a few seconds after the app goes to the background, with networking off.
 
 Done when:
-- [ ] `NSRemindersFullAccessUsageDescription` set; full access requested; denial handled; a writable list chosen.
-- [ ] Reminder saved with a due date AND an explicit `EKAlarm`; persistence verified in the Reminders app.
-- [ ] With Wi-Fi and cellular off, the phone locked: alert observed. Saved and alert observed reported separately, with the notification and Focus settings used (G2).
+- [ ] Permission request and denial handled.
+- [ ] Notification observed on the locked iPhone in airplane mode; Focus settings noted (G2).
+- [ ] A spoken version via `AVSpeechSynthesizer` plays in the foreground, offline.
 
-### [T004] Finalize domain contracts and synthetic fixtures
+### [T004] Define the money contracts and fixtures
 Area: domain
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 30 min
+Timebox: 20 min
 Depends on: T001
 Allowed files: contracts/, eval/requests.json, app/YapLater/Domain/, app/YapLaterTests/, docs/CONTRACTS.md
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #4
 
 What:
-Turn the proposed schema, request clock, draft revision, confirmation, receipt, and errors into shared Swift types.
+Rewrite the contract for money: `MoneyProposal` (kind `expense` | `budget_set` | `unsupported`, amount, merchant, category, date_phrase, period, question), `Entry`, `Budget`, the fixed `Category` set, and synthetic utterances with expected results.
 
 Done when:
-- [ ] Swift decode/encode agrees with the fixtures; malformed payloads fail safely in tests.
-- [ ] Cross-field checks and the date policy are written down; schema conformance never counts as permission to save.
-- [ ] Request IDs, draft revisions, and save intents are explicit; docs match actual file paths.
+- [ ] Schema, Swift types, and fixtures agree; malformed JSON fails safely in tests.
+- [ ] At least 15 synthetic utterances (clear, missing amount, number words, "yesterday", budget set, unsupported) in eval/.
+- [ ] docs/CONTRACTS.md replaced with the money contract.
 
-### [T005] Implement local request interpretation
+### [T005] Implement on-device money interpretation
 Area: inference
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 45 min
+Timebox: 30 min
 Depends on: T004, T016
 Allowed files: app/YapLater/Services/Inference/, app/YapLaterTests/, eval/
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #5
 
 What:
-Replace mock interpretation with the interpreter locked in T016, producing bounded structured output.
+Replace the mock interpreter with the one locked in T016: the transcript plus the request time and locale → a `MoneyProposal`.
 
 Done when:
-- [ ] The captured reference instant, locale, IANA time zone, and clarification context are passed in.
-- [ ] Typed proposals or useful failures for malformed or truncated output; inference has no EventKit access.
-- [ ] Cancellation ignores late results; device results on the synthetic corpus recorded in eval/results/.
+- [ ] Returns typed proposals or useful failures for malformed or truncated output; no storage access from inference.
+- [ ] Cancellation ignores late results; runs off the main thread.
+- [ ] Device results on the synthetic utterances recorded in eval/results/.
 
-### [T006] Implement date resolution and proposal validation
-Area: validation
+### [T006] Validate proposals and compute weekly budgets
+Area: domain
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 60 min
+Timebox: 30 min
 Depends on: T004
-Allowed files: app/YapLater/Services/Validation/, app/YapLater/Domain/, app/YapLaterTests/
+Allowed files: app/YapLater/Domain/, app/YapLaterTests/
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #6
 
 What:
-Resolve and validate reminder drafts in deterministic code, independent of the model.
+Pure Swift, unit-tested: amount must be present, plausible, and supported by the transcript; category from the fixed set (else Other); dates resolved in code; weekly totals per category; the nudge rule from the spec.
 
 Done when:
-- [ ] Explicit dates and relative offsets ("in one minute", "tomorrow at six") resolve against the fixed request clock; unit-tested.
-- [ ] Missing AM/PM, invalid dates, past times, invalid zones, DST gaps and overlaps, recurrence, and multiple tasks follow the written policy (ask, reject, or flag; never guess).
-- [ ] Edits invalidate the prior confirmation; revalidation before Save catches a relative reminder that has become past due.
+- [ ] Missing or unsupported amounts produce an ask-back question, never a guess.
+- [ ] "Yesterday", weekday names, and week boundaries resolve correctly against a fixed clock.
+- [ ] Nudge fires once per category per threshold per week, with numbers that match the stored totals.
 
-### [T007] Build capture, clarification, and editable review
+### [T007] Build the yap, ledger, and budget screens
 Area: ui
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 60 min
+Timebox: 45 min
 Depends on: T004, T017
 Allowed files: app/YapLater/Features/, app/YapLaterTests/
-Relevant contract: docs/CONTRACTS.md
+Relevant contract: .claude/skills/swiftui-motion/SKILL.md
 GitHub issue: #7
 
 What:
-Typed input, focused clarification, and an editable confirmation card built on the T017 tokens, using mock services until adapters land. Load the `swiftui-motion` skill.
+The main yap screen (big hold-to-talk button, live transcript, expense card), the ledger (this week's entries by day), and budget bars per category with a simple editor, on the T017 tokens and mock services. Load the `swiftui-motion` skill.
 
 Done when:
-- [ ] The card shows title, human-readable date and time, time zone, and destination list, all editable.
-- [ ] Save is disabled for invalid or incomplete drafts; edit, cancel, and retry paths are clear.
-- [ ] Inference shows an honest working state with Cancel; mocks stay visibly labeled; VoiceOver labels on every control.
+- [ ] Every screen uses design tokens only; dark mode and large text work.
+- [ ] The card shows amount, merchant, category, and date, with tap-to-edit and an Undo affordance.
+- [ ] VoiceOver labels on every control; mocks visibly labeled until T009.
 
-### [T008] Implement the EventKit reminder repository
-Area: reminders
+### [T008] Store entries and budgets locally with undo
+Area: store
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 45 min
-Depends on: T003, T004
-Allowed files: app/YapLater/Services/Reminders/, app/YapLaterTests/
+Timebox: 30 min
+Depends on: T004
+Allowed files: app/YapLater/Store/, app/YapLaterTests/
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #8
 
 What:
-Replace the reminder probe with a repository that accepts only confirmed, validated drafts.
+SwiftData persistence for entries (integer cents) and weekly budgets, with insert, undo (hard delete), edit, and queries for this week's totals.
 
 Done when:
-- [ ] Denied or revoked permission, and missing or read-only lists, handled without a write.
-- [ ] A save creates the intended title, due date, explicit alarm, and a receipt in the chosen list; the default list policy is decided (system default or a dedicated "Yap Later" list for clean demos).
-- [ ] Failures never show success; no duplicate app notification is scheduled for the same reminder.
+- [ ] Data survives relaunch; no network or iCloud container.
+- [ ] Undo and edit recompute totals; tested with an in-memory store.
+- [ ] A save is idempotent per entry ID (retries cannot duplicate).
 
-### [T009] Connect the complete typed reminder loop
+### [T009] Connect the complete voice-to-budget loop
 Area: integration
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 45 min
-Depends on: T005, T006, T007, T008
-Allowed files: app/YapLater/App/, app/YapLater/Domain/, app/YapLaterTests/
-Relevant contract: docs/CONTRACTS.md
+Timebox: 30 min
+Depends on: T003, T005, T006, T008, T012
+Allowed files: app/YapLater/App/, app/YapLater/Domain/, app/YapLater/Features/, app/YapLaterTests/
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #9
 
 What:
-Wire real inference, validation, review, and reminders through the agreed state machine. Remove the mock from the default path.
+Wire speech → interpreter → validator → auto-save with undo → budget update → nudge (in-app, spoken, notification). Remove mocks from the default path.
 
 Done when:
-- [ ] A fresh typed request becomes a reviewed Apple Reminder using only the iPhone.
-- [ ] Ambiguity asks before saving; stale responses cannot overwrite a newer request or edit.
-- [ ] Save requires explicit confirmation of the exact current revision; cancelled drafts never persist.
+- [ ] "Just spent like fifty bucks on groceries at Walmart" becomes a saved Groceries entry and moves the budget bar, on the iPhone.
+- [ ] Missing amount triggers a spoken ask-back; the spoken answer completes the entry.
+- [ ] The nudge fires at the threshold; stale results cannot overwrite a newer yap.
 
-### [T010] Handle retries, lifecycle, and duplicate saves
+### [T010] Handle undo, edits, retries, and duplicates
 Area: reliability
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 45 min
+Timebox: 20 min
 Depends on: T009
-Allowed files: app/YapLater/Domain/, app/YapLater/Services/, app/YapLaterTests/
-Relevant contract: docs/CONTRACTS.md
+Allowed files: app/YapLater/Domain/, app/YapLater/Services/, app/YapLater/Store/, app/YapLaterTests/
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #10
 
 What:
-Harden failure recovery and local save intent and receipt handling.
+Harden the loop: repeated taps, cancelled recordings, interpretation failures, denied microphone permission, background and foreground transitions.
 
 Done when:
-- [ ] Repeated taps and retries create no extra reminder; an in-flight Save is guarded.
-- [ ] A crash between save and receipt is treated as uncertain and reconciled, not claimed as exactly-once.
-- [ ] Missing model, cancelled inference, background and foreground transitions, denied permission, and failed save keep useful editable state.
+- [ ] No duplicate entries from repeated taps or retries; Undo is reliable within its window.
+- [ ] Every failure returns to a usable state with a clear, friendly message.
+- [ ] Denied microphone permission falls back to typed input with a Settings link.
 
 ### [T011] Run full real-device offline acceptance
 Area: acceptance
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 30 min
+Timebox: 20 min
 Depends on: T010
 Allowed files: eval/, docs/FEASIBILITY.md, docs/COMMANDS.md, docs/PREPARATION.md
-Relevant contract: docs/CONTRACTS.md
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #11
 
 What:
-Measure the cold and warm full pipeline with the Mac disconnected and networking off.
+Run the demo script on the iPhone after a cold launch, airplane mode on, Mac disconnected.
 
 Done when:
-- [ ] G0, G1 (or the T016 fallback), and G2 evidence present; cold launch finds all local assets.
-- [ ] Fresh input, clarification, review, real save, and locked-phone alert pass on the iPhone; voice too if T012 landed.
-- [ ] G3, timings, failures, runtime and artifact revisions, and limitations recorded; untested cases labeled.
+- [ ] Expense, ask-back, budget set, and nudge all pass; G3 recorded.
+- [ ] Speech and interpretation latencies, model and runtime identity recorded.
+- [ ] Limitations and untested cases labeled honestly.
 
-### [T012] Add offline push-to-talk ("yap") input
+### [T012] Add hold-to-talk and voice ask-back
 Area: speech
-Priority: should-have (user to confirm whether voice is required for the demo)
-Status: queued
-Owner/session: unclaimed
-Timebox: 45 min
-Depends on: T009, T020
-Allowed files: app/YapLater/Services/Speech/, app/YapLater/Features/Capture/, app/YapLaterTests/, eval/
-Relevant contract: docs/CONTRACTS.md
-GitHub issue: #12
-
-What:
-Hold-to-talk capture transcribed on the phone with the T020 WhisperKit setup, feeding the same request flow.
-
-Done when:
-- [ ] Microphone permission, start, stop, and cancel work; the transcript is visible and editable before interpretation.
-- [ ] Speech runs on the iPhone with networking off using provisioned assets.
-- [ ] Voice uses the same validation, confirmation, and save path; typed input stays available.
-
-### [T013] Rehearse and submit
-Area: demo
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 25 min
+Timebox: 30 min
+Depends on: T007, T020
+Allowed files: app/YapLater/Services/Speech/, app/YapLater/Features/Yap/, app/YapLaterTests/
+Relevant contract: .plans/yap-later-spec.md
+GitHub issue: #12
+
+What:
+Hold-to-talk with WhisperKit (T020 setup), live transcript, and a spoken question with a follow-up answer turn when the validator asks back. Typed input stays as a fallback.
+
+Done when:
+- [ ] Microphone permission, start, stop, and cancel work; transcript is visible and editable.
+- [ ] The ask-back speaks the question and accepts a held-to-talk answer that completes the same entry.
+- [ ] Works offline on the iPhone.
+
+### [T013] Pre-log the demo week, rehearse, and submit
+Area: demo
+Priority: must-have
+Status: queued
+Owner/session: user + Claude
+Timebox: 15 min
 Depends on: T011, T022, T023
 Allowed files: docs/DEMO.md, README.md, docs/PREPARATION.md, eval/results/
-Relevant contract: docs/CONTRACTS.md
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #13
 
 What:
-Run the live demo twice end to end, then submit before the confirmed cutoff.
+Yap a realistic week of entries through the real app and set budgets so the live demo yap tips Groceries into the nudge; run the demo twice; submit.
 
 Done when:
-- [ ] Two clean rehearsals of the one-minute reminder and the ambiguity example, with the real model, offline.
-- [ ] Every docs/DEMO.md item checked or explicitly marked not done.
-- [ ] The user submits (Claude does not submit externally without being asked); confirmation captured.
+- [ ] The demo week was entered through the app's real flow; budgets set so the nudge fires on the live yap.
+- [ ] Two clean rehearsals in airplane mode.
+- [ ] The user submits; confirmation captured.
 
-### [T014] Compare supported 2B and 4B variants
+### [T014] Compare supported Bonsai variants
 Area: optional-models
 Priority: optional
 Status: queued
 Owner/session: unclaimed
-Timebox: after submission
+Timebox: after 8:30
 Depends on: T011
 Allowed files: spikes/model/, eval/, docs/DECISIONS.md
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #14
 
 What:
-Compare another compatible model on the same device and corpus.
+Compare another compatible model on the same device and utterances.
 
 Done when:
-- [ ] Extraction quality, clarification, cold and warm latency, and memory compared on identical fixed-clock inputs.
-- [ ] The proven model stays as fallback; affected offline acceptance repeated after a switch.
-- [ ] Selection reasoned and recorded; parameter count alone is not the criterion.
+- [ ] Accuracy, latency, and memory compared on identical inputs.
+- [ ] The proven model stays as fallback.
+- [ ] Selection recorded with reasons.
 
-### [T015] Confirm event rules, cutoff, judging, and sponsor iOS path
+### [T015] Confirm event rules, judging, and sponsor iOS path
 Area: event
 Priority: must-have
 Status: ready
 Owner/session: user
-Timebox: 20 min
+Timebox: 15 min
 Depends on: none
-Allowed files: ideation/EVENT.md, docs/DECISIONS.md, docs/PLAN.md, docs/TICKETS.md
+Allowed files: ideation/EVENT.md, docs/DECISIONS.md, docs/TICKETS.md
 Relevant contract: none
 GitHub issue: #15
 
 What:
-Get the facts that decide what "winning" requires. The user asks organizers and sponsors; Claude records the answers.
+The user asks organizers and sponsors; Claude records the answers.
 
 Done when:
-- [ ] Submission cutoff, demo length and format, judging criteria, and submission platform recorded in ideation/EVENT.md; ticket targets shifted if the cutoff differs.
-- [ ] Required or rewarded sponsor tech recorded (Bonsai, Argmax, LM Studio), and whether a non-sponsor on-device fallback is acceptable.
-- [ ] Sponsor asked: "Do you have a working Swift/Xcode iPhone sample for Bonsai 2 2B or 4B, and which exact model file and runtime version should I use?" Answer recorded.
-- [ ] Whether the repo must be public, and any required video, slides, or README, recorded.
+- [ ] Judging criteria, demo length and format, submission platform, and whether the repo must be public recorded.
+- [ ] Whether Bonsai and Argmax use is required or rewarded, and whether an Apple on-device fallback is acceptable.
+- [ ] Sponsor asked: "Do you have a working Swift/Xcode iPhone sample for Bonsai 2 2B or 4B, and which exact model file and runtime version should I use?"
 
 ### [T016] Lock the on-device interpreter (Bonsai or fallback)
 Area: inference
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 30 min (decision at 06:30; fallback build up to 60 min)
+Timebox: 15 min decision; fallback build up to 30 min
 Depends on: T002
 Allowed files: app/YapLater/Services/Inference/, app/YapLater.xcodeproj/, docs/DECISIONS.md, docs/FEASIBILITY.md
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #16
 
 What:
-Decide the interpreter behind one `ReminderInterpreter` protocol. If G1 passed, lock Bonsai. If not, implement the fallback: Apple's on-device Foundation Models framework (iOS 26, runs on iPhone 17 Pro without network when Apple Intelligence is enabled) with guided structured output. Either way, it runs on the phone.
+One `MoneyInterpreter` protocol. If G1 passed, lock Bonsai. If not, implement Apple's on-device Foundation Models with guided generation into `MoneyProposal`. Either way it runs on the phone.
 
 Done when:
 - [ ] Decision and evidence in docs/DECISIONS.md, labeled honestly (sponsor model vs. fallback).
-- [ ] The chosen interpreter returns a proposal on the device offline for the one-minute example.
-- [ ] If the fallback is used, the README and pitch say so and the Bonsai attempt stays documented. [Unverified] Foundation Models availability on the user's phone, and whether the event accepts it (T015).
+- [ ] The chosen interpreter returns a valid proposal on the device offline.
+- [ ] [Unverified] Foundation Models availability on the user's phone and event acceptance (T015).
 
-### [T017] Establish the visual identity and design tokens
+### [T017] Establish the playful, bold visual identity
 Area: design
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 45 min
+Timebox: 30 min
 Depends on: T001
 Allowed files: app/YapLater/DesignSystem/, app/YapLater/Assets.xcassets/, docs/DESIGN.md
 Relevant contract: .claude/skills/swiftui-motion/SKILL.md
 GitHub issue: #17
 
 What:
-A small, specific identity so the app doesn't look generated: palette (light and dark), type scale, spacing, corner radii, the `Motion` tokens from the skill, app icon, and launch screen. One-page docs/DESIGN.md with the rationale.
+Playful and bold, with Duolingo/Spotify-level craft (inspiration, not their branding): a confident palette with one color per category, chunky rounded type, big tactile buttons, the `Motion` tokens, app icon, launch screen. One-page docs/DESIGN.md.
 
 Done when:
-- [ ] Color, type, spacing, and `Motion` tokens exist in code and every screen uses them (no ad-hoc values).
-- [ ] App icon (all required sizes via a single 1024 asset) and launch screen appear on the device.
-- [ ] Passes the skill's "not AI slop" checklist in light and dark mode; screenshots reviewed by the user.
+- [ ] Color, type, spacing, and `Motion` tokens in code; light and dark.
+- [ ] App icon and launch screen appear on the device.
+- [ ] Passes the skill's "not AI slop" checklist; screenshot reviewed by the user.
 
 ### [T018] Build the signature transitions and motion
 Area: design
-Priority: should-have
+Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 60 min
+Timebox: 25 min
 Depends on: T007, T017
 Allowed files: app/YapLater/Features/, app/YapLater/DesignSystem/
 Relevant contract: .claude/skills/swiftui-motion/SKILL.md
 GitHub issue: #18
 
 What:
-The moments judges remember, following the `swiftui-motion` skill: the typed (or spoken) request morphs into the confirmation card (`matchedGeometryEffect`); a calm, honest thinking state; changed fields animate with `numericText` during clarification; Save success (symbol replace + `.sensoryFeedback(.success)`) only after EventKit confirms.
+The moments people remember: a live, reactive voice waveform while holding; the transcript resolving into the expense card; the card flying into its category and the budget bar draining with `numericText` on the remaining amount; a bold nudge entrance with haptics; a satisfying Undo.
 
 Done when:
-- [ ] All four moments work on the device at 120 Hz without hitches; interrupting any of them (Cancel, edit) never jumps or saves.
-- [ ] Reduce Motion replaces movement with crossfades; largest Dynamic Type and dark mode still read clearly.
+- [ ] All moments smooth at 120 Hz on the device; interrupting never jumps or duplicates.
+- [ ] Reduce Motion swaps movement for crossfades.
 - [ ] A short screen recording reviewed by the user (kept out of Git).
 
-### [T019] Add first-run onboarding, permission priming, and the offline badge
-Area: ux
+### [T019] Start a yap from the Action Button
+Area: intents
 Priority: should-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 40 min
-Depends on: T008, T017
-Allowed files: app/YapLater/Features/Onboarding/, app/YapLater/Features/, app/YapLater/App/
-Relevant contract: docs/CONTRACTS.md
+Timebox: 15 min
+Depends on: T009
+Allowed files: app/YapLater/Intents/, app/YapLater/App/
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #19
 
 What:
-A two- or three-screen first run explaining what Yap Later does and that everything stays on the phone, priming Reminders (and microphone, if voice) before the system prompt. A small persistent "On-device" indicator that is true: it reflects that interpretation ran locally, not just network state.
+An App Intent ("Start a Yap") that opens the app straight into listening, assignable to the iPhone 17 Pro Action Button.
 
 Done when:
-- [ ] First run, permission granted, and permission denied (with a Settings deep link) all work on the device.
-- [ ] Onboarding shows once, and can be reset for demos without reinstalling.
-- [ ] The badge never claims more than was verified.
+- [ ] The intent appears in Shortcuts and on the Action Button setting.
+- [ ] Pressing the Action Button opens Yap Later already listening, offline.
+- [ ] Setup steps recorded in docs/COMMANDS.md.
 
-### [T020] Prove Argmax WhisperKit transcription offline on the iPhone
+### [T020] Prove WhisperKit transcription offline on the iPhone
 Area: speech
-Priority: should-have
+Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 60 min
+Timebox: 40 min
 Depends on: T001
 Allowed files: spikes/speech/, app/YapLater/Services/Speech/, app/YapLater.xcodeproj/, docs/FEASIBILITY.md, docs/COMMANDS.md
-Relevant contract: docs/CONTRACTS.md
+Relevant contract: .plans/yap-later-spec.md
 GitHub issue: #20
 
 What:
-Add Argmax's WhisperKit Swift package (a hackathon sponsor) and transcribe a spoken reminder on the phone, offline. ket-lite measured WhisperKit small on the Mac (1% word error, 0.5 s resident); the phone is untested.
+Add Argmax's WhisperKit Swift package (sponsor) and transcribe spoken expenses on the phone with networking off; the model is bundled or provisioned before going offline.
 
 Done when:
-- [ ] Package version and model variant recorded; the model is bundled or provisioned before going offline.
-- [ ] Three spoken reminders transcribed on the iPhone with networking off; latency and accuracy noted.
-- [ ] G4 (speech) PASS, FAIL, or BLOCKED recorded in docs/FEASIBILITY.md.
+- [ ] Package version and model variant recorded.
+- [ ] Three spoken expenses (including number words like "six fifty") transcribed offline; latency noted.
+- [ ] G4 PASS, FAIL, or BLOCKED recorded in docs/FEASIBILITY.md.
 
-### [T021] Brain dump: several reminders from one ramble
+### [T021] Ramble: several entries from one yap
 Area: product
-Priority: optional (user decision; fits the "yap" name)
+Priority: should-have
 Status: queued
 Owner/session: unclaimed
-Timebox: after submission unless the core is done early
+Timebox: if ahead of schedule
 Depends on: T011
 Allowed files: app/YapLater/, app/YapLaterTests/, contracts/, eval/
 Relevant contract: docs/CONTRACTS.md
 GitHub issue: #21
 
 What:
-Let one long ramble produce a stack of draft reminders, each reviewed and saved individually with the same rules.
+"Paid 12 for lunch, 40 for gas, and 6 for coffee" → three cards, each validated and auto-saved with its own undo.
 
 Done when:
-- [ ] Contract extended for multiple proposals; each draft validated independently.
-- [ ] The user reviews, edits, or drops each one; only explicitly saved drafts are written.
-- [ ] Offline acceptance repeated for the multi-reminder path.
+- [ ] Contract supports a list of proposals; each validated independently.
+- [ ] Cards animate in sequence (staggered) into their categories.
+- [ ] Offline acceptance repeated for the ramble path.
 
-### [T022] Write the judge-facing README and make the repo submission-ready
+### [T022] Write the judge-facing README
 Area: submission
 Priority: must-have
 Status: queued
 Owner/session: unclaimed
-Timebox: 30 min
+Timebox: 15 min
 Depends on: T009
 Allowed files: README.md, docs/, LICENSE
 Relevant contract: none
 GitHub issue: #22
 
 What:
-A README a judge can read in two minutes: the problem, a GIF or screenshots, how it works (diagram: input → on-device model → validation → your confirmation → Apple Reminders), why it is private and offline, sponsor tech used, measured results, honest limitations, and build steps.
+A two-minute read: the problem (bank-login anxiety), screenshots or GIF, how it works (voice → on-device speech → on-device model → validation → local ledger → nudge), privacy and offline, sponsor tech, measured results, honest limitations, build steps.
 
 Done when:
-- [ ] README written with real measurements from FEASIBILITY.md and eval/results/ only.
-- [ ] Model and library attribution and a project LICENSE added; no secrets, weights, or personal data in Git.
-- [ ] Repository visibility set as T015 requires (the user flips it to public if needed).
+- [ ] Real measurements only, from FEASIBILITY and eval/results.
+- [ ] Attribution and LICENSE; no secrets, weights, or personal data in Git.
+- [ ] Repo visibility set as T015 requires (the user flips it to public if needed).
 
 ### [T023] Record the demo video and write the pitch
 Area: submission
 Priority: must-have
 Status: queued
 Owner/session: user + Claude
-Timebox: 35 min
+Timebox: 20 min
 Depends on: T011
 Allowed files: docs/DEMO.md, docs/PITCH.md
 Relevant contract: none
 GitHub issue: #23
 
 What:
-A pitch script that fits the confirmed demo length (problem → live demo in airplane mode → how it works → what's next) and a backup screen recording of the real offline flow.
+A timed pitch script (problem → live airplane-mode demo → how it works → what's next) and a backup screen recording of the real offline flow.
 
 Done when:
-- [ ] docs/PITCH.md with a timed script; the opening line states the problem in one sentence.
-- [ ] Backup video recorded on the device in airplane mode, labeled as a recording, no personal reminders visible.
-- [ ] The user has rehearsed the pitch once against the clock.
+- [ ] docs/PITCH.md fits the demo length; the first line states the problem.
+- [ ] Backup video recorded on the device in airplane mode, labeled as a recording.
+- [ ] Rehearsed once against the clock.
+
+### [T024] Bill reminders by voice
+Area: stretch
+Priority: stretch
+Status: queued
+Owner/session: unclaimed
+Timebox: after 8:30
+Depends on: T011
+Allowed files: app/YapLater/, app/YapLaterTests/, contracts/
+Relevant contract: docs/CONTRACTS.md
+GitHub issue: #24
+
+What:
+"Rent's due on the 1st, $1,200" → a confirmed bill with a reminder (Apple Reminder with an explicit alarm, or a local notification), shown in an upcoming-bills list.
+
+Done when:
+- [ ] Explicit confirmation before creating the reminder; date resolved in code.
+- [ ] The alert observed on the locked phone offline.
+- [ ] Bills appear in the weekly view without double-counting as spending.
+
+### [T025] Location nudges near frequent merchants
+Area: stretch
+Priority: stretch
+Status: queued
+Owner/session: unclaimed
+Timebox: after 8:30
+Depends on: T011
+Allowed files: app/YapLater/, app/YapLaterTests/
+Relevant contract: .plans/yap-later-spec.md
+GitHub issue: #25
+
+What:
+With location permission, a geofence around a merchant the user logs often (e.g. a Starbucks) posts "Only $X left for Coffee this week" on arrival.
+
+Done when:
+- [ ] Opt-in permission flow; region monitoring entirely on the device.
+- [ ] Nudge observed on the device with real numbers.
+- [ ] Battery and privacy behavior explained in the README.
 
 ## State discipline
 
-States: **queued** (reviewed, waiting on dependencies) → **ready** (dependencies integrated) → **in-progress** (claimed by a session) → **review** → **integrated**; **blocked** when a real dependency or device problem prevents progress. Mirror state changes to the GitHub issue's `status:` label. Mark a device-gated task integrated only with its required evidence. Preserve keys and results when revising scope.
+States: **queued** → **ready** (dependencies integrated) → **in-progress** → **review** → **integrated** (issue closed by the merged PR); **blocked** when a real dependency or device problem prevents progress. Mirror changes to the issue's `status:` label.

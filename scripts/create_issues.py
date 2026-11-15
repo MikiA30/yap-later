@@ -27,6 +27,7 @@ LABELS = {
     'priority:must-have': ('b60205', 'Required for the submitted demo'),
     'priority:should-have': ('fbca04', 'Wanted; cut after optional work'),
     'priority:optional': ('c5def5', 'After submission unless ahead'),
+    'priority:stretch': ('bfdadc', 'Only after the core demo is done'),
     'device-gate': ('5319e7', 'Needs evidence from the real iPhone'),
 }
 
@@ -87,7 +88,7 @@ Source of truth: [`docs/TICKETS.md`](../blob/main/docs/TICKETS.md). Claim by swi
 
 def labels_for(t):
     out = [f"status:{t['status']}", f"priority:{t['priority']}", f"area:{t['area']}"]
-    if t['key'] in {'T001', 'T002', 'T003', 'T011', 'T016', 'T020'}:
+    if t['key'] in {'T001', 'T002', 'T003', 'T009', 'T011', 'T012', 'T016', 'T019', 'T020'}:
         out.append('device-gate')
     return out
 
@@ -95,7 +96,7 @@ def labels_for(t):
 def main():
     tickets = parse()
     for t in tickets:
-        if t['priority'] not in {'must-have', 'should-have', 'optional'}:
+        if t['priority'] not in {'must-have', 'should-have', 'optional', 'stretch'}:
             sys.exit(f"{t['key']}: unknown priority {t['priority']}")
     for name, (color, desc) in LABELS.items():
         gh('label', 'create', name, '--color', color, '--description', desc, '--force')
@@ -127,7 +128,16 @@ def main():
     for t in tickets:  # refresh bodies so dependency numbers are complete
         t['issue'] = mapping.get(t['key'], t['issue'])
         if t['issue'].startswith('#'):
-            gh('issue', 'edit', t['issue'][1:], '--body', body(t, mapping))
+            num = t['issue'][1:]
+            want = set(labels_for(t))
+            have = set((gh('issue', 'view', num, '--json', 'labels', '-q', '.labels[].name') or '').splitlines())
+            managed = {l for l in have if l.split(':')[0] in {'status', 'priority', 'area'} or l == 'device-gate'}
+            args = ['issue', 'edit', num, '--title', f"[{t['key']}] {t['title']}", '--body', body(t, mapping)]
+            if 'status:in-progress' in have or 'status:review' in have:
+                want = {l for l in want if not l.startswith('status:')} | {l for l in have if l.startswith('status:')}
+            for l in sorted(want - have): args += ['--add-label', l]
+            for l in sorted(managed - want): args += ['--remove-label', l]
+            gh(*args)
     print(json.dumps(mapping, indent=1))
 
 

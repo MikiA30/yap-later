@@ -17,5 +17,10 @@
 | 2026-11-15 | Proposal | Backlog timed to the last known cutoff (Sun Nov 15, 12:00 EST, unconfirmed): feature freeze 10:00, Bonsai gate hard stop 06:30 |
 | 2026-11-15 | Proposal | If Bonsai cannot run on the iPhone by 06:30, fall back to Apple's on-device Foundation Models behind the same interface, labeled as a fallback (T016) |
 | 2026-11-15 | Proposal | Voice through Argmax WhisperKit (sponsor) as a parallel should-have lane (T020 → T012); user to confirm whether voice is required for the demo |
+| 2026-11-15 | User | **Pivot: money first.** Yap Later is a voice-first, fully local expense tracker with weekly per-category budgets and nudges; reminders/bills and location nudges are stretch. Supersedes the reminders-first direction and the "typed first" proposal |
+| 2026-11-15 | User | Deadline 8:30 AM EST today; supersedes the noon-based timeline |
+| 2026-11-15 | User | Voice is the hero (WhisperKit must-have); ask back by voice on ambiguity; expenses auto-save with undo; playful and bold look; Action Button trigger; demo week pre-logged through the app |
+| 2026-11-15 | User | No AI contributor on commits or PRs: no co-author trailer, no generated-by line |
+| 2026-11-15 | Proposal | Fixed categories, USD integer cents, SwiftData, nudge threshold, AVSpeechSynthesizer for spoken questions: see the spec's product rules |
 
 Preserve superseded decisions with the replacement and reason. Do not mark a proposal accepted merely because it appears in the draft backlog.

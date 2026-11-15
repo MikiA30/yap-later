@@ -1,5 +1,7 @@
 # Contracts v0 — proposed, no app implementation yet
 
+> **Superseded in part (2026-11-15 03:35):** the product pivoted to a voice-first local expense tracker. `.plans/yap-later-spec.md` and `docs/TICKETS.md` are authoritative; this file still describes the earlier reminders flow until its ticket rewrites it.
+
 T004 finalizes these boundaries and reconciles schema/fixtures before feature adapters rely on them.
 
 ## 1. Interpretation request (app-owned)

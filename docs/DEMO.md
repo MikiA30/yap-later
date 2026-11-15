@@ -1,5 +1,7 @@
 # Demo and submission checklist
 
+> **Superseded in part (2026-11-15 03:35):** the product pivoted to a voice-first local expense tracker. `.plans/yap-later-spec.md` and `docs/TICKETS.md` are authoritative; this file still describes the earlier reminders flow until its ticket rewrites it.
+
 - [ ] Confirm the actual cutoff, demo duration, and required integrations.
 - [ ] Record device/iOS, app commit, exact model/runtime versions, and setup steps.
 - [ ] Download/provision everything before the offline test.

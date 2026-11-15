@@ -1,5 +1,7 @@
 # Yap Later: supplied context
 
+> **Superseded in part (2026-11-15 03:35):** the product pivoted to a voice-first local expense tracker. `.plans/yap-later-spec.md` and `docs/TICKETS.md` are authoritative; this file still describes the earlier reminders flow until its ticket rewrites it.
+
 ## Confirmed and adopted context
 
 - [User] Name: **Yap Later** (2026-11-15; replaces the earlier working name VocaLedger). Rebuild the setup from scratch, including interview, kickoff, and tickets.

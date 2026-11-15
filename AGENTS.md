@@ -2,11 +2,13 @@
 
 ## Scope and current state
 
-This is **Yap Later** (first called VocaLedger; the local folder keeps that name), a fresh, independent project: an iPhone app that interprets a reminder request locally, shows an editable confirmation, and saves an Apple Reminder with an alarm. Target device: the user's iPhone 17 Pro, 256 GB storage. Storage is not inference memory.
+This is **Yap Later** (first called VocaLedger; the local folder keeps that name): a voice-first, fully local expense tracker for iPhone. You say "just spent like $50 on groceries"; on-device speech and an on-device model log it, categorize it, and check it against a weekly budget, with a nudge when a budget runs low. No bank login, no account, no network. The authoritative product description is `.plans/yap-later-spec.md` (interviewed 2026-11-15). Target device: the user's iPhone 17 Pro. **Deadline: 8:30 AM EST, November 15, 2026.**
 
-The user requested this restart on November 15, 2026. This folder contains a seeded specification, draft operating documents, a draft backlog, and workflows. No Yap Later app, successful model run, permission grant, reminder save, or alert delivery has been demonstrated. Preserve that distinction in reports.
+The project began as a reminders app; the user pivoted it to money-first during the interview. Bill reminders and location nudges are stretch. Where older docs (`docs/PLAN.md`, `docs/ARCHITECTURE.md`, `docs/CONTRACTS.md`, `docs/DEMO.md`, `ideation/PROJECT_BRIEF.md`) still describe the reminders flow, the spec and `docs/TICKETS.md` win until those docs are rewritten.
 
-The previous ket-lite project remains in its own folder. Do not inherit its Mac/Python architecture, LM Studio dependency, GitHub remote, issue numbers, tests, or completed work. Runtime inference for Yap Later must happen inside the iPhone app. A Mac is a development tool, not a runtime dependency.
+No Yap Later app, model run, transcription, or notification has been demonstrated on the device yet. Preserve that distinction in reports.
+
+The previous ket-lite project remains in its own folder. Do not inherit its Mac/Python architecture, LM Studio dependency, GitHub remote, issue numbers, tests, or completed work. All inference and speech recognition must happen inside the iPhone app. A Mac is a development tool, not a runtime dependency.
 
 ## Read and update
 
@@ -24,22 +26,23 @@ Use [User] for explicit user choices, [Direction] for the adopted discussion dir
 
 Ask one to three related questions at a time in the main conversation. Prioritize questions that change the next implementation step. Do not repeat the known name, device, or offline goal, or force an hour-long interview. Explain choices in plain language. Record unresolved details and proceed on independent work when possible. A product interview does not establish runtime compatibility.
 
-## Proposed first release
+## First release
 
-SwiftUI iOS app; typed input first (voice via Argmax WhisperKit as a parallel should-have lane, see T012/T020), one reminder per request, offline model inference, clarification when date/time is ambiguous, editable preview, explicit Save, then EventKit. Whether voice is required in the demo is the user's call.
+SwiftUI iOS 26 app. Hold-to-talk (Argmax WhisperKit, on-device) → on-device interpretation (Bonsai if gate G1 passes by its hard stop; otherwise Apple's Foundation Models, labeled honestly as a fallback) → validation in app code → auto-save with undo → weekly per-category budgets → nudge (in-app, spoken, local notification). Look and feel: playful and bold, with deliberate motion; always load the `swiftui-motion` skill for UI work.
 
-Choose a runtime with demonstrated support for the EXACT Bonsai checkpoint and quantization. Prefer a working sponsor iOS starter. Compare 2B/4B on the actual phone; do not pick by parameter count alone. Stock MLX Swift support for the selected model is not established. Record artifact revisions and measurements before declaring a model selected. No Python server, localhost-on-Mac service, or cloud model in the delivered flow. If the Bonsai gate fails by its hard stop, T016 may switch to Apple's on-device Foundation Models, labeled honestly as a fallback.
+Choose a runtime with demonstrated support for the EXACT Bonsai checkpoint and quantization. Record artifact revisions and measurements before declaring a model selected. No Python server, localhost-on-Mac service, or cloud model in the delivered flow.
 
 ## Product invariants
 
-- Model output proposes data; it never directly writes to EventKit or executes actions.
-- Pass the current instant, locale, and IANA time zone into interpretation. Validate all fields independently. Do not silently guess missing AM/PM, time zone, date, or recurrence.
-- Resolve relative dates in application code against the captured request time. Keep that anchor stable while the user clarifies; refresh before Save if the reminder has become past due.
-- Show the exact title, date, time, time zone, and destination list for confirmation. A due date alone is not an alarm: explicitly create the alarm and verify notification delivery on the real device.
-- Only a fresh explicit Save of a valid reviewed draft permits a reminder write. Cancellation, stale model responses, malformed JSON, denied permission, and repeated taps must not create extra reminders.
-- Keep inference cancellable and off the UI thread. No continuous background model process is required for a saved system reminder.
-- Offline means the full flow works without Wi-Fi, cellular, or the Mac after model provisioning. Prove this after a cold launch as well as a warm run.
-- Do not claim a reminder notification will appear until tested with the device's Reminders notifications and Focus settings. Report saved versus alert observed separately.
+- The model proposes; app code decides. The model never writes to storage. Validate amount, category, date, and kind independently.
+- Never invent an amount. If none was spoken, or the proposed amount isn't supported by the transcript, ask back by voice instead of saving.
+- Categories come from the fixed set in the spec; unknown maps to Other. Money is stored as integer cents, USD.
+- Resolve relative dates and week boundaries in app code against the captured request time.
+- Expenses auto-save with Undo and tap-to-edit (user decision). Repeated taps, retries, and stale model responses must not create duplicate entries. Stretch features that create Apple Reminders keep explicit confirmation.
+- Nudges state only numbers computed from stored data, and fire once per threshold.
+- Keep speech and inference cancellable and off the UI thread. No continuous background listening.
+- Offline means the full flow works without Wi-Fi, cellular, or the Mac after assets are provisioned. Prove it after a cold launch on the real iPhone.
+- Never show "on-device" or "private" claims the app can't back up; never present mock or seeded data as the user's real spending.
 
 ## Development and Git
 
