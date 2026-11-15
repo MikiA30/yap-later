@@ -60,7 +60,7 @@ Done when:
 ### [T002] Prove a supported Bonsai model on the actual iPhone
 Area: inference
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: hard stop 05:15 EST, then T016 decides
 Depends on: T001
@@ -155,7 +155,7 @@ Done when:
 ### [T007] Build the yap, ledger, and budget screens
 Area: ui
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 45 min
 Depends on: T004, T017
@@ -193,7 +193,7 @@ Done when:
 ### [T009] Connect the complete voice-to-budget loop
 Area: integration
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T003, T005, T006, T008, T012
@@ -212,7 +212,7 @@ Done when:
 ### [T010] Handle undo, edits, retries, and duplicates
 Area: reliability
 Priority: must-have
-Status: queued
+Status: integrated
 Owner/session: unclaimed
 Timebox: 20 min
 Depends on: T009
@@ -250,7 +250,7 @@ Done when:
 ### [T012] Add hold-to-talk and voice ask-back
 Area: speech
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T007, T020
@@ -345,7 +345,7 @@ Done when:
 ### [T017] Establish the playful, bold visual identity
 Area: design
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 30 min
 Depends on: T001
@@ -364,7 +364,7 @@ Done when:
 ### [T018] Build the signature transitions and motion
 Area: design
 Priority: must-have
-Status: review
+Status: integrated
 Owner/session: unclaimed
 Timebox: 25 min
 Depends on: T007, T017
