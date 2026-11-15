@@ -10,6 +10,7 @@ final class ArgmaxSpeaker: Speaker {
     private var tts: TTSKit?
     private var speaking: Task<Void, Never>?
     private var loading: Task<Void, Never>?
+    private var stopping: Task<Void, Never>?
 
     /// `<assets>/tts`: the downloaded model, and `tokenizer/` beside it.
     static var folder: URL? { LocalAssets.root?.appendingPathComponent("tts", isDirectory: true) }
@@ -31,16 +32,19 @@ final class ArgmaxSpeaker: Speaker {
     /// True when the voice can load with no network: model and tokenizer are both on the device.
     static var isProvisioned: Bool { modelFolder != nil && tokenizerFolder != nil }
 
-    /// Whether the app should speak with this voice. On the Mac: whenever the model is there.
-    /// On the iPhone it also needs the marker file `tts/enabled`, added once the voice and the microphone
-    /// have been checked together on that phone; until then the system voice stays in charge.
+    /// Whether the app should speak with this voice. The file `tts/voice.txt` holding "on" or "off" decides;
+    /// without it the Mac uses the voice and the iPhone keeps the system voice, which answers instantly
+    /// (on the iPhone 17 Pro this voice needs about 20 s to load and speaks a short line slower than real time).
     static var isEnabled: Bool {
         guard isProvisioned else { return false }
+        if let file = folder?.appendingPathComponent("voice.txt"),
+           let choice = try? String(contentsOf: file, encoding: .utf8) {
+            return choice.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "on"
+        }
         #if os(macOS)
         return true
         #else
-        guard let marker = folder?.appendingPathComponent("enabled") else { return false }
-        return FileManager.default.fileExists(atPath: marker.path)
+        return false
         #endif
     }
 
@@ -76,7 +80,10 @@ final class ArgmaxSpeaker: Speaker {
             fallback.speak(text)
             return
         }
+        let silenced = stopping
         speaking = Task { [weak self] in
+            await silenced?.value // the previous line has fully stopped before this one starts
+            guard !Task.isCancelled else { return }
             let started = Date()
             do {
                 var first: Date?
@@ -84,12 +91,29 @@ final class ArgmaxSpeaker: Speaker {
                     if first == nil { first = Date() }
                     return !Task.isCancelled
                 }
+                guard !Task.isCancelled else { return }
                 print("TTS spoke \"\(text)\": first audio \(Int((first ?? Date()).timeIntervalSince(started) * 1000)) ms, total \(Int(Date().timeIntervalSince(started) * 1000)) ms")
             } catch is CancellationError {
             } catch {
+                guard !Task.isCancelled else { return }
                 print("TTS failed, using the system voice: \(error)")
-                if !Task.isCancelled { self?.fallback.speak(text) }
+                self?.fallback.speak(text)
             }
+        }
+    }
+
+    /// Cuts the voice off at once: the user is about to talk, and the microphone must not hear the app.
+    func stop() {
+        fallback.stop()
+        let interrupted = speaking
+        speaking = nil
+        interrupted?.cancel()
+        guard let tts, interrupted != nil else { return }
+        let earlier = stopping
+        stopping = Task {
+            await earlier?.value
+            await tts.audioOutput.stopPlayback(waitForCompletion: false)
+            await interrupted?.value
         }
     }
 
@@ -103,10 +127,5 @@ final class ArgmaxSpeaker: Speaker {
         }
     }
 
-    func stop() {
-        speaking?.cancel()
-        speaking = nil
-        fallback.stop()
-    }
 }
 #endif
