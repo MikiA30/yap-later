@@ -63,8 +63,8 @@ struct HomeView: View {
                 Chip(text: "MOCK", fill: Theme.lemon, foreground: .black)
                     .accessibilityLabel("Mock mode. Speech or the model is a stand-in.")
             } else {
-                Chip(text: "On this phone", systemImage: "lock.fill")
-                    .accessibilityLabel("Everything runs on this phone. Model: \(model.interpreterName)")
+                Chip(text: "On this \(LocalAssets.deviceName)", systemImage: "lock.fill")
+                    .accessibilityLabel("Everything runs on this \(LocalAssets.deviceName). Model: \(model.interpreterName)")
             }
         }
         .padding(.horizontal, Theme.Space.xl)

@@ -80,7 +80,7 @@ final class ArgmaxSpeaker: Speaker {
             let started = Date()
             do {
                 var first: Date?
-                _ = try await tts.play(text: text, speaker: .serena, language: .english) { _ in
+                _ = try await tts.play(text: Self.spokenForm(of: text), speaker: .serena, language: .english) { _ in
                     if first == nil { first = Date() }
                     return !Task.isCancelled
                 }
@@ -90,6 +90,16 @@ final class ArgmaxSpeaker: Speaker {
                 print("TTS failed, using the system voice: \(error)")
                 if !Task.isCancelled { self?.fallback.speak(text) }
             }
+        }
+    }
+
+    /// Writes money the way it is said, so the voice does not have to guess: "$6.50" becomes "6 dollars and 50 cents".
+    nonisolated static func spokenForm(of text: String) -> String {
+        text.replacing(/\$(\d[\d,]*)(?:\.(\d\d))?/) { match in
+            let dollars = String(match.1).replacingOccurrences(of: ",", with: "")
+            let dollarWord = dollars == "1" ? "dollar" : "dollars"
+            guard let cents = match.2, let value = Int(cents), value > 0 else { return "\(dollars) \(dollarWord)" }
+            return "\(dollars) \(dollarWord) and \(value) \(value == 1 ? "cent" : "cents")"
         }
     }
 

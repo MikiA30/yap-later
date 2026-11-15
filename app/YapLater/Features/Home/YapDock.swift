@@ -97,7 +97,7 @@ struct YapDock: View {
                         .font(Theme.title)
                         .foregroundStyle(Theme.ink)
                         .multilineTextAlignment(.center)
-                    working("Working it out on this phone")
+                    working("Working it out on this \(LocalAssets.deviceName)")
                 }
                 .padding(Theme.Space.l)
                 .frame(maxWidth: .infinity)
