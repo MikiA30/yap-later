@@ -13,3 +13,4 @@
 The ket-lite application, measurements, GitHub issues, and completed milestones were not carried into this fresh app. Reused material is the workflow pattern, original interview skill, and relevant conversation facts. This record does not establish event eligibility.
 
 Append substantive code/model/device work with its tool, date, revision, result, and evidence. Keep failed experiments and assumptions distinct from successful measured behavior.
+| 2026-11-15 | Build the app: iPhone and Mac targets, WhisperKit speech, Bonsai 2 via llama.cpp, validation, budgets, nudges, reminders, ramble, tests, README, pitch, and tickets from the kickoff deck | Claude Code; Xcode 26.6; `gh` CLI; the user's live tests on the iPhone | Device and Mac results are in `docs/FEASIBILITY.md`; written with cloud AI assistance, so not eligible for the Locally Made subtrack |

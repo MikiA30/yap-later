@@ -1,20 +1,22 @@
-# Pitch (about 2.5 minutes)
+# Pitch and video script (2:00 maximum)
 
-**0:00 Problem.** "Budgeting apps start by asking for your bank login. A lot of us just won't do that. And the alternative, typing every purchase into a form, nobody keeps up for more than a week."
+The rules cap the video at 2 minutes. The theme is "Recreate": remake an existing AI app fully on-device. Judging: use of Bonsai/Argmax, creativity, wow factor, technical impressiveness. Timings below add up to 2:00; cut Demo 3 to one of its two parts if a take runs long.
 
-**0:20 Idea.** "Yap Later is a budget you talk to. Everything, the speech recognition, the language model, your data, runs on this phone. Watch: I'm turning on airplane mode." (Show Control Center, airplane on, Wi-Fi off.)
+**0:00 Recreate (15 s).** "AI budgeting apps like Rocket Money and Cleo want your bank login, and they think in the cloud. We recreated that idea with nothing leaving the device. This is Yap Later. Airplane mode is on." (Show Control Center: airplane on, Wi-Fi off.)
 
-**0:35 Demo 1, expense + nudge.** Press the Action Button (or hold the orange button): "Just spent fifty bucks on groceries at Walmart." The card lands in Groceries, the weekly total rolls up, the budget bar fills, and the phone says "Only $… left for Groceries this week."
+**0:15 Demo 1, expense and nudge (25 s).** Hold the orange button: "Just spent fifty bucks on groceries at Walmart." The card lands in Groceries, the weekly total rolls up, the budget bar fills, and the phone says "Only $… left for Groceries this week."
 
-**1:05 Demo 2, it asks instead of guessing.** "Grabbed a coffee." It asks "How much was it?" Hold: "Six fifty." It logs $6.50 under Coffee. "It never makes up a number. If you don't say an amount, it asks."
+**0:40 Demo 2, it asks instead of guessing (20 s).** "Grabbed a coffee." It asks "How much was it?" Hold: "Six fifty." It logs $6.50 under Coffee. "It never makes up a number."
 
-**1:30 Demo 3, ramble and reminders.** "Twelve on lunch, six fifty on coffee and twenty two on an Uber." Three expenses land at once; one Undo would remove all three. Then: "Remind me to pay rent tomorrow at six pm." A card shows the title and exact time; tap Save and it is in Apple Reminders. (If short on time, do only one of these, or swap in "Set my fun budget to forty a week.")
+**1:00 Demo 3, ramble and reminder (25 s).** "Twelve on lunch, six fifty on coffee and twenty two on an Uber." Three expenses land at once. Then: "Remind me to pay rent tomorrow at six pm." Tap Save; it is in Apple Reminders.
 
-**1:50 How.** "Speech is Argmax's WhisperKit. Understanding is PrismML's Ternary Bonsai 2, the 4-billion-parameter model, running through llama.cpp on the iPhone's GPU, about a second and a half per sentence. We tested 2B and 4B on the phone: 12 out of 20 versus 20 out of 20, so we ship the 4B. With reminders added it now scores 23 out of 23. The model only proposes; plain Swift code checks every amount and date before anything is saved."
+**1:25 Same app on the Mac (10 s).** Show the Mac with Wi-Fi off, Yap Later open, one expense spoken or typed. "Same code, running natively on the Mac."
 
-**2:15 Why it matters.** "Private by construction: there's no server to breach and no bank token to leak. And it's fast enough that logging a purchase takes less time than unlocking a banking app."
+**1:35 How (20 s).** "Speech is Argmax WhisperKit. Understanding is PrismML's Ternary Bonsai 2, four billion parameters in 1.2 gigabytes, running through llama.cpp on the GPU: about 1.3 seconds a sentence on the phone, half a second on the Mac. We measured the 2B at 12 of 20 and the 4B at 23 of 23, so we ship the smallest one that passes. The model only proposes; Swift code checks every amount and date."
 
-**2:25 Next.** "A nudge when you walk into the coffee shop that's eating your budget, and a more natural voice."
+**1:55 Close (5 s).** "No bank login, no server, no signal needed. Yap Later."
+
+For a live finalist demo (12:30), use the same order and skip the Mac segment if switching screens is awkward.
 
 ## Demo checklist
 
@@ -22,5 +24,7 @@
 - App opened once after the last install so the speech model is warm (first load after an install can take a minute).
 - Budgets set and the week pre-logged through the app so the live grocery yap crosses the "low" line (25% of the limit, or $50 for limits over $200). Example: Groceries budget $200 with $100 already logged; the live $50 leaves exactly $50.
 - Airplane mode on, Wi-Fi and Bluetooth off, Mac unplugged.
+- Mac: run `scripts/setup_mac.sh` beforehand, open the app once and allow the microphone, then turn Wi-Fi off before recording the Mac segment.
+- Video is at most 2:00; submit it with the GitHub link before noon.
 - Reminders access already granted (save one reminder before the demo so the permission prompt does not appear live).
 - Backup: screen recording of the same flow made in airplane mode.

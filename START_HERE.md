@@ -9,7 +9,7 @@ Work from this folder, not the ket-lite folder. The existing files are a head st
 - [ ] Open Terminal and run:
 
 ```sh
-cd '/Users/mikiyasasmamaw/Documents/ChatGPT/VocaLedger'
+cd <the folder you cloned this repository into>
 claude
 ```
 

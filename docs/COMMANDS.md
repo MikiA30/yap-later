@@ -3,7 +3,7 @@
 ## Starter
 
 ```sh
-cd '/Users/mikiyasasmamaw/Documents/ChatGPT/VocaLedger'
+cd <the folder you cloned this repository into>
 python3 scripts/check_setup.py
 claude
 ```
