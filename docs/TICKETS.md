@@ -288,7 +288,7 @@ Done when:
 ### [T014] Compare supported Bonsai variants
 Area: optional-models
 Priority: optional
-Status: queued
+Status: integrated
 Owner/session: unclaimed
 Timebox: after 8:30
 Depends on: T011
@@ -421,7 +421,7 @@ Done when:
 ### [T021] Ramble: several entries from one yap
 Area: product
 Priority: should-have
-Status: queued
+Status: integrated
 Owner/session: unclaimed
 Timebox: if ahead of schedule
 Depends on: T011

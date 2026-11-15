@@ -32,6 +32,8 @@ final class AppModel {
     private(set) var budgetStatuses: [BudgetStatus] = []
     /// The entry that can still be undone; nil once the undo window closes.
     private(set) var lastSaved: Entry?
+    /// Everything the last yap saved (several when it named several expenses). Undo removes all of them.
+    private(set) var lastSavedGroup: [Entry] = []
     /// The nudge to show now; nil when dismissed.
     private(set) var nudge: Nudge?
     /// Set briefly when a budget was just created or changed by voice.
@@ -180,14 +182,17 @@ final class AppModel {
     }
 
     func undoLast() {
-        guard let entry = lastSaved else { return }
-        delete(entry)
+        guard lastSaved != nil else { return }
+        let group = lastSavedGroup
+        clearUndo()
+        for entry in group { delete(entry) }
     }
 
     func update(_ entry: Entry) {
         let before = budgetStatuses
         try? store.upsert(entry)
         if lastSaved?.id == entry.id { lastSaved = entry }
+        if let index = lastSavedGroup.firstIndex(where: { $0.id == entry.id }) { lastSavedGroup[index] = entry }
         refresh()
         raiseNudgeIfNeeded(before: before, category: entry.category)
     }
@@ -195,6 +200,7 @@ final class AppModel {
     func delete(_ entry: Entry) {
         try? store.delete(entryID: entry.id)
         if lastSaved?.id == entry.id { clearUndo() }
+        lastSavedGroup.removeAll { $0.id == entry.id }
         if nudge?.category == entry.category { nudge = nil }
         refresh()
     }
@@ -260,6 +266,9 @@ final class AppModel {
         }
         transcript = text
         phase = .thinking
+        // Several expenses in one yap: each part goes through the same checks; all or nothing.
+        if pendingContext == nil, await handleRamble(text, generation: mine) { return }
+        guard mine == generation else { return }
         let combined = pendingContext.map {
             "\($0.trimmingCharacters(in: .punctuationCharacters.union(.whitespaces))). \(text)"
         } ?? text
@@ -291,6 +300,7 @@ final class AppModel {
             }
             refresh()
             lastSaved = entry
+            lastSavedGroup = [entry]
             startUndoWindow(for: entry.id)
             phase = .idle
             raiseNudgeIfNeeded(before: before, category: entry.category)
@@ -330,6 +340,45 @@ final class AppModel {
         }
     }
 
+    /// Tries to read the yap as a list of expenses. Returns false, having saved nothing, unless every part
+    /// is a valid expense; the caller then treats the yap as a single request.
+    private func handleRamble(_ text: String, generation mine: Int) async -> Bool {
+        let pieces = RambleSplitter.pieces(of: text)
+        guard pieces.count >= 2, pieces.count <= 6 else { return false }
+        let instant = now()
+        var found: [Entry] = []
+        for piece in pieces {
+            let request = InterpretationRequest(transcript: piece, referenceInstant: instant)
+            guard let proposal = try? await interpreter.interpret(request), mine == generation,
+                  case .expense(let entry) = validator.validate(proposal, request: request) else { return false }
+            #if DEBUG
+            print("YAP ramble part: \"\(piece)\" -> \(Money.format(cents: entry.amountCents)) \(entry.category.rawValue)")
+            #endif
+            found.append(entry)
+        }
+        resetConversation()
+        let before = budgetStatuses
+        var saved: [Entry] = []
+        for entry in found {
+            do { try store.upsert(entry); saved.append(entry) } catch {
+                for entry in saved { try? store.delete(entryID: entry.id) }
+                refresh()
+                phase = .failed(message: "That didn't save. Try again.")
+                return true
+            }
+        }
+        refresh()
+        lastSaved = found.last
+        lastSavedGroup = found
+        if let last = found.last { startUndoWindow(for: last.id) }
+        phase = .idle
+        var seen: Set<Category> = []
+        for entry in found where seen.insert(entry.category).inserted {
+            raiseNudgeIfNeeded(before: before, category: entry.category)
+        }
+        return true
+    }
+
     // MARK: Helpers
 
     private func resetConversation() {
@@ -359,7 +408,7 @@ final class AppModel {
             try? await Task.sleep(for: undoWindow)
             guard !Task.isCancelled else { return }
             await MainActor.run { [weak self] in
-                if self?.lastSaved?.id == id { self?.lastSaved = nil }
+                if self?.lastSaved?.id == id { self?.clearUndo() }
             }
         }
     }
@@ -367,6 +416,7 @@ final class AppModel {
     private func clearUndo() {
         undoTask?.cancel()
         lastSaved = nil
+        lastSavedGroup = []
     }
 
     private static func message(for error: Error) -> String {
