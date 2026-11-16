@@ -16,6 +16,10 @@
 </p>
 
 <p align="center">
+  <a href="https://drive.google.com/file/d/1WXrQ3Q9icLI2y2gvujiAQ4lrr94LgLdG/view"><b>▶ Watch the 2-minute demo video</b></a>
+</p>
+
+<p align="center">
   <img src="docs/images/screens.png" alt="Yap Later on the Mac: the home screen greeting the user by name with this week's total and budgets, the charts page, and the profile page with a name and picture">
 </p>
 
